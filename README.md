@@ -35,11 +35,14 @@ if you don't provide it.
         (raise 10)
         (raise)))))
 
+(defonce consumer (atom nil))
+
 (let [queue-url (:queue-url (a/<!! (sqs/get-queue-url client "my-queue-name")))]
   (reset! consumer (start-consumer queue-url compute)))
 
 (when @consumer
-  (stop-consumer @consumer))
+  (stop-consumer @consumer)
+  (reset! consumer nil))
 ```
 
 `start-consumer` can take some optional arguments which control consumer work
