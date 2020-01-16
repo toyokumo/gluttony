@@ -1,8 +1,12 @@
-# gluttony
-A consumer library using [core.async](https://github.com/clojure/core.async) 
+# Gluttony
+A consumer library using [core.async](https://github.com/clojure/core.async)
 and [aws-api](https://github.com/cognitect-labs/aws-api) based on AWS SQS.
 
 You can use this library with Standard queue but it is almost designed for FIFO queue.
+
+[![CircleCI](https://circleci.com/gh/toyokumo/gluttony.svg?style=svg)](https://circleci.com/gh/toyokumo/gluttony)
+[![cljdoc badge](https://cljdoc.org/badge/toyokumo/gluttony)](https://cljdoc.org/d/toyokumo/gluttony/CURRENT)
+[![Clojars Project](https://img.shields.io/clojars/v/toyokumo/gluttony.svg)](https://clojars.org/toyokumo/gluttony)
 
 ## Usage
 Gluttony mainly offer two APIs, `start-consumer` and `stop-consumer`.
@@ -47,7 +51,7 @@ if you don't provide it.
 
 `start-consumer` can take some optional arguments which control consumer work
 such as the number of worker processes, long polling duration and so on.
-See [API docs](https://cljdoc.org/d/toyokumo/gluttony/CURRENT) for detail. 
+See [API docs](https://cljdoc.org/d/toyokumo/gluttony/CURRENT) for detail.
 
 ## What for?
 There already has been [Squeedo](https://github.com/TheClimateCorporation/squeedo) for the same purpose
@@ -55,9 +59,9 @@ and it provides nice APIs and work as intended. Gluttony use it as reference so 
 
 Gluttony deffer from Squeedo in following points.
 
-First, Gluttony only uses asynchronous http requests with aws-api, which uses Jetty http client internally, 
+First, Gluttony only uses asynchronous http requests with aws-api, which uses Jetty http client internally,
 but Squeedo depends on [AmazonSQS](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html) interface
-instead of [AmazonSQSAsync](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html) and 
+instead of [AmazonSQSAsync](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html) and
 doesn't depend on AWS SDK Ver2 but Ver1.11.
 
 Second, Gluttony does focus on being as a consumer, so doesn't have APIs such as creating a new queue
