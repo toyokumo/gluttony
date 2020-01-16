@@ -41,7 +41,7 @@ if you don't provide it.
 
 (defonce consumer (atom nil))
 
-(let [queue-url (:queue-url (a/<!! (sqs/get-queue-url client "my-queue-name")))]
+(let [queue-url (:queue-url (a/<!! (get-queue-url client {:queue-name "my-queue.fifo"})))]
   (reset! consumer (start-consumer queue-url compute)))
 
 (when @consumer
