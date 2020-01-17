@@ -2,6 +2,7 @@
   (:require
    [clojure.core.async :as a]
    [clojure.core.async.impl.protocols :as a.i.p]
+   [clojure.string :as str]
    [cognitect.aws.client.api :as aws]
    [gluttony.protocols :as p]
    [gluttony.record.message :as r.msg]
@@ -103,7 +104,7 @@
                  receive-limit
                  long-polling-duration
                  exceptional-poll-delay-ms]}]
-  {:pre [(string? queue-url)
+  {:pre [(not (str/blank? queue-url))
          (ifn? compute)
          (instance? Client client)
          (boolean? given-client?)
