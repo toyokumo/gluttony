@@ -3,6 +3,7 @@
    [clojure.core.async :as a]
    [clojure.core.async.impl.protocols :as a.i.p]
    [clojure.string :as str]
+   [clojure.tools.logging :as log]
    [cognitect.aws.client.api :as aws]
    [gluttony.protocols :as p]
    [gluttony.record.message :as r.msg]
@@ -23,11 +24,12 @@
              :message-attribute-names ["All"]
              :max-number-of-messages receive-limit
              :wait-time-seconds long-polling-duration}]
-    (dotimes [_ num-receivers]
+    (dotimes [i num-receivers]
       (a/go-loop []
         (let [res (a/<! (sqs/receive-message client req))]
+          (log/debugf "receiver %s receives %s" i res)
           (cond
-            (= res {})
+            (empty? res)
             nil
 
             (= (set (keys res)) #{:messages})
@@ -58,9 +60,10 @@
   [{:as consumer :keys [compute
                         num-workers
                         message-chan]}]
-  (dotimes [_ num-workers]
+  (dotimes [i num-workers]
     (a/go-loop []
       (when-let [message (a/<! message-chan)]
+        (log/debugf "worker %s takes %s" i message)
         (let [respond (partial respond consumer message)
               raise (partial raise consumer message)]
           (try
