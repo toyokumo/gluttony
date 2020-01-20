@@ -20,15 +20,16 @@
     (let [compute (fn [_ _ _])
           consumer (with-redefs [cognitect.aws.client.api/client
                                  (constantly th/client)]
-                     (start-consumer "https://ap..." compute))]
+                     (start-consumer "https://ap..." compute))
+          num-workers (max 1 (dec (.availableProcessors (Runtime/getRuntime))))]
       (is (instance? Consumer consumer))
       (is (= {:queue-url "https://ap..."
               :compute compute
               :client th/client
               :given-client? false
-              :num-workers (dec (.availableProcessors (Runtime/getRuntime)))
-              :num-receivers 1
-              :message-channel-size 20
+              :num-workers num-workers
+              :num-receivers (max 1 (int (/ num-workers 10)))
+              :message-channel-size (* 20 (max 1 (int (/ num-workers 10))))
               :receive-limit 10
               :long-polling-duration 20
               :exceptional-poll-delay-ms 10000}
