@@ -13,20 +13,6 @@
       (when-let [res (a/<! (aws-async/invoke client op-map))]
         (cske/transform-keys csk/->kebab-case-keyword res)))))
 
-(defn get-queue-url
-  "Get the URL of an existing AWS SQS queue.
-
-  Input:
-    client  - the SQS client, which is the instance of cognitect.aws.client.Client.
-    request - a map. See the result of (:request (:GetQueueUrl (aws/ops client))) but the keys can
-              be kebab-case-keyword.
-
-  Output:
-    a channel will take a map. See the result of (:response (:GetQueueUrl (aws/ops client))) but the
-    key is kebab-case-keyword."
-  [client request]
-  (invoke-async client {:op :GetQueueUrl :request request}))
-
 (defn receive-message
   "Retrieves one or more messages (up to 10), from the specified queue.
 

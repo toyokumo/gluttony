@@ -41,9 +41,10 @@ if you don't provide it.
 
 (defonce consumer (atom nil))
 
-(let [queue-url (:queue-url (a/<!! (get-queue-url client {:queue-name "my-queue.fifo"})))]
-  (reset! consumer (start-consumer queue-url compute)))
+;; Start consumer connects to assigned queue
+(reset! consumer (start-consumer queue-url compute))
 
+;; Stop receiver and worker
 (when @consumer
   (stop-consumer @consumer)
   (reset! consumer nil))

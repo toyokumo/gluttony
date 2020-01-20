@@ -6,17 +6,6 @@
 
 (use-fixtures :once test-client-fixture)
 
-(deftest get-queue-url-test
-  (testing "Assure aws-api schema doesn't change"
-    (is (= {:name "GetQueueUrl"
-            :request {:QueueName 'string
-                      :QueueOwnerAWSAccountId 'string}
-            :required [:QueueName]
-            :response {:QueueUrl 'string}}
-           (-> (aws/ops client)
-               :GetQueueUrl
-               (dissoc :documentation))))))
-
 (deftest receive-message-test
   (testing "Assure aws-api schema doesn't change"
     (is (= {:name "ReceiveMessage"
