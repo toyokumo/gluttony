@@ -1,0 +1,30 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/clojure:openjdk-8-lein-2.9.1-node-browsers-legacy
+        user: circleci
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "project.clj" }}
+            - v2-dependencies-
+      - run:
+          name: Fetch dependencies
+          command: lein deps
+      - save_cache:
+          key: v2-dependencies-{{ checksum "project.clj" }}
+          paths:
+            - ~/.m2
+      - run:
+          name: Test
+          command: lein test
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
