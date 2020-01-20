@@ -78,13 +78,15 @@
         (let [collected (atom [])
               compute (fn [message respond _]
                         (log/info (:body message))
+                        (is (instance? gluttony.record.message.SQSMessage message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
                         (respond))
               consumer (start-consumer queue-url compute
                                        {:client th/client
                                         :num-workers 1
-                                        :num-receivers 1})]
+                                        :num-receivers 1
+                                        :long-polling-duration 10})]
           (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 20))))
           (is (= (vec (range 1 21))
                  @collected))
@@ -109,7 +111,8 @@
               consumer (start-consumer queue-url compute
                                        {:client th/client
                                         :num-workers 3
-                                        :num-receivers 2})]
+                                        :num-receivers 2
+                                        :long-polling-duration 10})]
           (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 20))))
           (is (= (set (range 1 21))
                  (set @collected)))
