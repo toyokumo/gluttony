@@ -1,7 +1,7 @@
 (ns gluttony.test-helper
   (:require
+   [aero.core :as aero]
    [clojure.core.async :as a]
-   [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cognitect.aws.client.api :as aws]))
@@ -12,9 +12,8 @@
 
 (defn read-config-fixture [f]
   (alter-var-root #'config
-                  (constantly (some-> (io/file "dev-resources/config.edn")
-                                      (slurp)
-                                      (edn/read-string))))
+                  (constantly (some-> (io/resource "test-config.edn")
+                                      (aero/read-config))))
   (f))
 
 (defn test-client-fixture [f]

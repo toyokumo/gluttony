@@ -12,4 +12,3 @@ pom.xml.asc
 .hg/
 .idea/
 gluttony.iml
-dev-resources/
