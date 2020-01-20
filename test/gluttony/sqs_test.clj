@@ -2,7 +2,6 @@
   (:require
    [cognitect.aws.client.api :as aws]
    [clojure.test :refer :all]
-   [gluttony.sqs :refer [get-queue-url]]
    [gluttony.test-helper :refer [client test-client-fixture]]))
 
 (use-fixtures :once test-client-fixture)
