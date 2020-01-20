@@ -68,12 +68,7 @@ Second, Gluttony does focus on being as a consumer, so doesn't have APIs such as
 or setting attributes.
 
 ## Test
-If you want to run test cases access to SQS, prepare a configuration file at `dev-resources/config.edn` like following:
-
-```
-{:region :your-aws-region
- :queue-name "my-test-queue.fifo"}
-```
+You may have to fix `dev-resources/test-config.edn`.
 
 ## Future
 
