@@ -61,11 +61,8 @@
                                  default: 10000 (10 seconds).
    Output:
     a instance of gluttony.record.consumer.Consumer"
-  ^Consumer [queue-url compute & opts]
-  (let [opts (if (= (count opts) 1)
-               (first opts)
-               (apply hash-map opts))
-        client (or (:client opts)
+  ^Consumer [queue-url compute & [opts]]
+  (let [client (or (:client opts)
                    (aws/client {:api :sqs}))
         given-client? (some? (:client opts))
         num-workers (or (:num-workers opts)
