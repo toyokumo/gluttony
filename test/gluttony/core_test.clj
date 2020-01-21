@@ -17,14 +17,14 @@
 
 (deftest start-consumer-test
   (testing "No option"
-    (let [compute (fn [_ _ _])
+    (let [consume (fn [_ _ _])
           consumer (with-redefs [cognitect.aws.client.api/client
                                  (constantly th/client)]
-                     (start-consumer "https://ap..." compute))
+                     (start-consumer "https://ap..." consume))
           num-workers (max 1 (dec (.availableProcessors (Runtime/getRuntime))))]
       (is (instance? Consumer consumer))
       (is (= {:queue-url "https://ap..."
-              :compute compute
+              :consume consume
               :client th/client
               :given-client? false
               :num-workers num-workers
@@ -37,8 +37,8 @@
       (stop-consumer consumer)))
 
   (testing "Give some options"
-    (let [compute (fn [_ _ _])
-          consumer (start-consumer "https://ap..." compute
+    (let [consume (fn [_ _ _])
+          consumer (start-consumer "https://ap..." consume
                                    {:client th/client
                                     :num-workers 2
                                     :num-receivers 1
@@ -46,7 +46,7 @@
                                     :receive-limit 5})]
       (is (instance? Consumer consumer))
       (is (= {:queue-url "https://ap..."
-              :compute compute
+              :consume consume
               :client th/client
               :given-client? true
               :num-workers 2
@@ -77,13 +77,13 @@
                                              :MessageGroupId (str uuid)}})))
 
         (let [collected (atom [])
-              compute (fn [message respond _]
+              consume (fn [message respond _]
                         (log/info (:body message))
                         (is (instance? gluttony.record.message.SQSMessage message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
                         (respond))
-              consumer (start-consumer queue-url compute
+              consumer (start-consumer queue-url consume
                                        {:client th/client
                                         :num-workers 1
                                         :num-receivers 1
@@ -104,12 +104,12 @@
                                              :MessageGroupId (str uuid)}})))
 
         (let [collected (atom [])
-              compute (fn [message respond _]
+              consume (fn [message respond _]
                         (log/info (:body message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
                         (respond))
-              consumer (start-consumer queue-url compute
+              consumer (start-consumer queue-url consume
                                        {:client th/client
                                         :num-workers 3
                                         :num-receivers 2

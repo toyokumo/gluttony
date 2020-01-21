@@ -10,7 +10,7 @@
   (testing "Check pre condition work"
     (is (thrown? AssertionError
                  (new-consumer {:queue-url ""
-                                :compute (fn [m r r'])
+                                :consume (fn [m r r'])
                                 :client client
                                 :given-client? true
                                 :num-workers 1
@@ -22,7 +22,7 @@
         "queue-url must not be blank")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute "foo"
+                                :consume "foo"
                                 :client client
                                 :given-client? true
                                 :num-workers 1
@@ -31,10 +31,10 @@
                                 :receive-limit 10
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
-        "compute must be a function")
+        "consume must be a function")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client {}
                                 :given-client? true
                                 :num-workers 1
@@ -46,7 +46,7 @@
         "client must be a instance of cognitect.aws.client.Clinet")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? nil
                                 :num-workers 1
@@ -58,7 +58,7 @@
         "given-client? must be a boolean value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? true
                                 :num-workers 0
@@ -70,7 +70,7 @@
         "num-workers must be a positive value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? true
                                 :num-workers 1
@@ -82,7 +82,7 @@
         "num-receivers must be a positive value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? true
                                 :num-workers 1
@@ -94,7 +94,7 @@
         "message-channel-size must be a positive value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? true
                                 :num-workers 1
@@ -106,7 +106,7 @@
         "receive-limit must be between zero and ten")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? true
                                 :num-workers 1
@@ -118,7 +118,7 @@
         "long-polling-duration must be between zero and twenty")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
-                                :compute (fn [_ _ _])
+                                :consume (fn [_ _ _])
                                 :client client
                                 :given-client? true
                                 :num-workers 1

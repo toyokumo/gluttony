@@ -9,33 +9,29 @@
 (defn start-consumer
   "Creates a consumer and run it.
 
-   The consumer mainly run three type of processes based on core.async/go-loop.
+   The consumer mainly run two type of processes based on core.async/go-loop.
 
    1. Receiver
    Receiver receives messages from AWS SQS and push them into a local buffer, core.async/channel,
    as quickly as possible up to the configured buffer size.
 
    2. Worker
-   Worker takes a message which the receivers push and invokes the compute function which you pass
+   Worker takes a message which the receivers push and invokes the consume function which you pass
    as the argument.
-
-   3. Acker
-   Acker takes a message which the compute function has processed and delete it from the queue or
-   change the message visibility for retrying.
 
    The client MUST call stop-consumer when you no longer want to process messages.
 
    Input:
     queue-url - the url of an AWS SQS queue used as the producer.
-    compute - a compute function that takes three arguments:
+    consume - consume is a function that takes three arguments:
               1. a 'message' is a record of gluttony.record.message/SQSMessage which contains the
               body of the sqs message.
-              2. a function when it MUST be invoked when the compute success. it takes no arguments.
-              3. a function when it MUST be invoked when the compute fail. it takes zero or one
+              2. a function when it MUST be invoked when the consume success. it takes no arguments.
+              3. a function when it MUST be invoked when the consume fail. it takes zero or one
               argument. the argument decides how long to delay for retrying. 0 to 43200. Maximum: 12
               hours. when you pass no delay time, retrying as soon as possible.
               like this:
-              (defn compute [message respond raise]
+              (defn consume [message respond raise]
                 (let [success? (...your computation uses the message...)]
                   (if success?
                     (respond)
@@ -61,7 +57,7 @@
                                  default: 10000 (10 seconds).
    Output:
     a instance of gluttony.record.consumer.Consumer"
-  ^Consumer [queue-url compute & [opts]]
+  ^Consumer [queue-url consume & [opts]]
   (let [client (or (:client opts)
                    (aws/client {:api :sqs}))
         given-client? (some? (:client opts))
@@ -78,7 +74,7 @@
         exceptional-poll-delay-ms (or (:exceptional-poll-delay-ms opts)
                                       10000)
         consumer (c/new-consumer {:queue-url queue-url
-                                  :compute compute
+                                  :consume consume
                                   :client client
                                   :given-client? given-client?
                                   :num-workers num-workers

@@ -13,7 +13,7 @@ Gluttony mainly offer two APIs, `start-consumer` and `stop-consumer`.
 
 `start-consumer` makes a consumer instance.
 It has some `go-loop` processes internally and they receive messages from AWS SQS
-and invoke your `compute` function.
+and invoke your `consume` function.
 
 `stop-consumer` takes a consumer created by `start-consumer`, and stop all processes and the client
 if you don't provide it.
@@ -22,8 +22,8 @@ if you don't provide it.
 (require '[clojure.core.async :as a]
          '[gluttony.core :as gluttony])
 
-(defn compute
-  "Your compute function takes three arguments.
+(defn consume
+  "Your consume function takes three arguments.
   `message` is a instance received from SQS.
   You MUST call `respond` which is 2nd argument or `raise` which is 3rd argument.
   respond delete the message from the SQS, so call it when your process has done successfully.
@@ -42,7 +42,7 @@ if you don't provide it.
 (defonce consumer (atom nil))
 
 ;; Start consumer connects to assigned queue
-(reset! consumer (gluttony/start-consumer queue-url compute))
+(reset! consumer (gluttony/start-consumer queue-url consume))
 
 ;; Stop receiver and worker
 (when @consumer

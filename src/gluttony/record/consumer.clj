@@ -57,7 +57,7 @@
                                            :visibility-timeout retry-delay})))
 
 (defn- start-workers
-  [{:as consumer :keys [compute
+  [{:as consumer :keys [consume
                         num-workers
                         message-chan]}]
   (dotimes [i num-workers]
@@ -67,14 +67,14 @@
         (let [respond (partial respond consumer message)
               raise (partial raise consumer message)]
           (try
-            (compute message respond raise)
+            (consume message respond raise)
             (catch Throwable _
               (raise))))
         (recur)))))
 
 (defrecord Consumer
   [queue-url
-   compute
+   consume
    client
    given-client?
    num-workers
@@ -98,7 +98,7 @@
 
 (defn new-consumer
   [{:as m :keys [queue-url
-                 compute
+                 consume
                  client
                  given-client?
                  num-workers
@@ -108,7 +108,7 @@
                  long-polling-duration
                  exceptional-poll-delay-ms]}]
   {:pre [(not (str/blank? queue-url))
-         (ifn? compute)
+         (ifn? consume)
          (instance? Client client)
          (boolean? given-client?)
          (pos? num-workers)
