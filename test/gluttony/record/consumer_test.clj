@@ -18,7 +18,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "queue-url must not be blank")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute "foo"
@@ -29,7 +30,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "compute must be a function")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -40,7 +42,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "client must be a instance of cognitect.aws.client.Clinet")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -51,7 +54,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "given-client? must be a boolean value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -62,7 +66,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "num-workers must be a positive value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -73,7 +78,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "num-receivers must be a positive value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -84,7 +90,8 @@
                                 :message-channel-size 0
                                 :receive-limit 10
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "message-channel-size must be a positive value")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -95,7 +102,8 @@
                                 :message-channel-size 10
                                 :receive-limit 11
                                 :long-polling-duration 10
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "receive-limit must be between zero and ten")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -106,7 +114,8 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 21
-                                :exceptional-poll-delay-ms 1000})))
+                                :exceptional-poll-delay-ms 1000}))
+        "long-polling-duration must be between zero and twenty")
     (is (thrown? AssertionError
                  (new-consumer {:queue-url "https://ap..."
                                 :compute (fn [_ _ _])
@@ -117,4 +126,5 @@
                                 :message-channel-size 10
                                 :receive-limit 10
                                 :long-polling-duration 20
-                                :exceptional-poll-delay-ms 0})))))
+                                :exceptional-poll-delay-ms 0}))
+        "exceptional-poll-delay-ms must be a positive value")))
