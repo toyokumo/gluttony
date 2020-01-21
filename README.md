@@ -20,13 +20,12 @@ if you don't provide it.
 
 ```clojure
 (require '[clojure.core.async :as a]
-         '[gluttony.core :as gluttony]
-         '[gluttony.sqs :as sqs])
+         '[gluttony.core :as gluttony])
 
 (defn compute
   "Your compute function takes three arguments.
-  message is a instance received from SQS.
-  You MUST call respond which is 2nd argument or raise which is 3rd argument.
+  `message` is a instance received from SQS.
+  You MUST call `respond` which is 2nd argument or `raise` which is 3rd argument.
   respond delete the message from the SQS, so call it when your process has done successfully.
   raise doesn't delete the message but change the limit of time that the message can be seen
   from other receivers. raise takes zero or one argument, which control the limit of time.
@@ -35,18 +34,19 @@ if you don't provide it.
   (let [success? (do-my-computation-use-cpu message)]
     (if success?
       (respond)
-      (if slowly?
-        (raise 10)
-        (raise)))))
+      ;; You can pass to the raise a integer determines retry delay seconds
+      (raise))))
+
+(def queue-url "https://...")
 
 (defonce consumer (atom nil))
 
 ;; Start consumer connects to assigned queue
-(reset! consumer (start-consumer queue-url compute))
+(reset! consumer (gluttony/start-consumer queue-url compute))
 
 ;; Stop receiver and worker
 (when @consumer
-  (stop-consumer @consumer)
+  (gluttony/stop-consumer @consumer)
   (reset! consumer nil))
 ```
 
