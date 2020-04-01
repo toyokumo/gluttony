@@ -33,7 +33,8 @@ if you don't provide it.
   [^gluttony.record.message.SQSMessage message respond raise]
   (let [success? (do-my-computation-use-cpu message)]
     (if success?
-      (respond)
+      (do (respond)
+          (println "success!"))
       ;; You can pass to the raise a integer determines retry delay seconds
       (raise))))
 
