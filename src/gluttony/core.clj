@@ -28,8 +28,8 @@
               body of the sqs message.
               2. a function when it MUST be invoked when the consume success. it takes no arguments.
               3. a function when it MUST be invoked when the consume fail. it takes zero or one
-              argument. the argument decides how long to delay for retrying. 0 to 43200. Maximum: 12
-              hours. when you pass no delay time, retrying as soon as possible.
+              argument. the argument decides how long to delay in seconds for retrying. 0 to 43200.
+              Maximum: 12 hours. when you pass no delay time, retrying as soon as possible.
               like this:
               (defn consume [message respond raise]
                 (let [success? (...your computation uses the message...)]
@@ -55,6 +55,18 @@
     :exceptional-poll-delay-ms - when an Exception is received while polling, receiver wait for the
                                  number of ms until polling again.
                                  default: 10000 (10 seconds).
+    :heartbeat                 - the duration (in seconds) for which the consumer extends message
+                                 visibility if the message is being processed. 1 to 43199.
+                                 default: nil
+                                 If it isn't set, heartbeat doesn't work.
+                                 If it's set, :heartbeat-timeout is required.
+                                 Refer to AWS documents for more detail: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/working-with-messages.html
+    :heartbeat-timeout         - the timeout (in seconds) of heartbeat.
+                                 If your consume function doesn't call respond or raise within heartbeat
+                                 timeout, the consumer doesn't extend message visibility any more.
+                                 2 to 43200.
+                                 default: nil
+                                 :heartbeat-timeout must be longer than :heartbeat.
    Output:
     a instance of gluttony.record.consumer.Consumer"
   ^Consumer [queue-url consume & [opts]]
@@ -82,7 +94,9 @@
                                   :message-channel-size message-channel-size
                                   :receive-limit receive-limit
                                   :long-polling-duration long-polling-duration
-                                  :exceptional-poll-delay-ms exceptional-poll-delay-ms})]
+                                  :exceptional-poll-delay-ms exceptional-poll-delay-ms
+                                  :heartbeat (:heartbeat opts)
+                                  :heartbeat-timeout (:heartbeat-timeout opts)})]
     (p/-start consumer)))
 
 (defn stop-consumer
