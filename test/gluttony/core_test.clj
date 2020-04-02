@@ -33,7 +33,9 @@
               :message-channel-size (* 20 (max 1 (int (/ num-workers 10))))
               :receive-limit 10
               :long-polling-duration 20
-              :exceptional-poll-delay-ms 10000}
+              :exceptional-poll-delay-ms 10000
+              :heartbeat nil
+              :heartbeat-timeout nil}
              (dissoc consumer :message-chan)))
       (stop-consumer consumer)))
 
@@ -44,7 +46,9 @@
                                     :num-workers 2
                                     :num-receivers 1
                                     :message-channel-size 10
-                                    :receive-limit 5})]
+                                    :receive-limit 5
+                                    :heartbeat 60
+                                    :heartbeat-timeout 300})]
       (is (instance? Consumer consumer))
       (is (= {:queue-url "https://ap..."
               :consume consume
@@ -55,7 +59,9 @@
               :message-channel-size 10
               :receive-limit 5
               :long-polling-duration 20
-              :exceptional-poll-delay-ms 10000}
+              :exceptional-poll-delay-ms 10000
+              :heartbeat 60
+              :heartbeat-timeout 300}
              (dissoc consumer :message-chan)))
       (stop-consumer consumer))))
 
@@ -118,4 +124,35 @@
           (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 20))))
           (is (= (set (range 1 21))
                  (set @collected)))
+          (stop-consumer consumer)))
+
+      (testing "Gather every data in order"
+        ;; Add test data
+        (let [uuid (UUID/randomUUID)]
+          (dotimes [i 1]
+            (aws/invoke th/client {:op :SendMessage
+                                   :request {:QueueUrl queue-url
+                                             :MessageBody (pr-str {:id (inc i)})
+                                             :MessageDeduplicationId (str uuid ":" i)
+                                             :MessageGroupId (str uuid)}})))
+
+        (let [collected (atom [])
+              consume (fn [message respond _]
+                        (log/info (:body message))
+                        (a/go
+                          ;; wait 3 seconds
+                          (a/<! (a/timeout 3000))
+                          (swap! collected
+                                 conj (:id (edn/read-string (:body message))))
+                          (respond)))
+              consumer (start-consumer queue-url consume
+                                       {:client th/client
+                                        :num-workers 1
+                                        :num-receivers 1
+                                        :long-polling-duration 10
+                                        :heartbeat 1
+                                        :heartbeat-timeout 5})]
+          (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 1))))
+          (is (= [1]
+                 @collected))
           (stop-consumer consumer))))))
