@@ -126,7 +126,7 @@
                  (set @collected)))
           (stop-consumer consumer)))
 
-      (testing "Gather every data in order"
+      (testing "Heartbeat work"
         ;; Add test data
         (let [uuid (UUID/randomUUID)]
           (dotimes [i 1]
