@@ -127,4 +127,31 @@
                                 :receive-limit 10
                                 :long-polling-duration 20
                                 :exceptional-poll-delay-ms 0}))
-        "exceptional-poll-delay-ms must be a positive value")))
+        "exceptional-poll-delay-ms must be a positive value")
+    (is (thrown? AssertionError
+                 (new-consumer {:queue-url "https://ap..."
+                                :consume (fn [_ _ _])
+                                :client client
+                                :given-client? true
+                                :num-workers 1
+                                :num-receivers 1
+                                :message-channel-size 10
+                                :receive-limit 10
+                                :long-polling-duration 20
+                                :exceptional-poll-delay-ms 0
+                                :heartbeat 60}))
+        "heartbeat is set but heartbeat-timeout isn't set")
+    (is (thrown? AssertionError
+                 (new-consumer {:queue-url "https://ap..."
+                                :consume (fn [_ _ _])
+                                :client client
+                                :given-client? true
+                                :num-workers 1
+                                :num-receivers 1
+                                :message-channel-size 10
+                                :receive-limit 10
+                                :long-polling-duration 20
+                                :exceptional-poll-delay-ms 0
+                                :heartbeat 60
+                                :heartbeat-timeout 10}))
+        "heartbeat is bigger than heartbeat-timeout")))

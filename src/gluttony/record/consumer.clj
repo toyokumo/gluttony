@@ -44,17 +44,37 @@
           (when-not (a.i.p/closed? message-chan)
             (recur)))))))
 
-(defn- respond
-  [{:keys [client queue-url]} message]
+(defn- respond*
+  [{:keys [client queue-url]} p message]
+  (deliver p :respond)
   (sqs/delete-message client {:queue-url queue-url
                               :receipt-handle (:receipt-handle message)}))
 
-(defn- raise
-  [{:keys [client queue-url]} message & [retry-delay]]
+(defn- raise*
+  [{:keys [client queue-url]} p message & [retry-delay]]
+  (deliver p :raise)
   (let [retry-delay (or retry-delay 0)]
     (sqs/change-message-visibility client {:queue-url queue-url
                                            :receipt-handle (:receipt-handle message)
                                            :visibility-timeout retry-delay})))
+
+(defn- heartbeat*
+  "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
+  [{:keys [client queue-url heartbeat heartbeat-timeout]} p message]
+  (when heartbeat
+    (let [heartbeat-msecs (* heartbeat 1000)
+          start (System/currentTimeMillis)]
+      (a/go
+        (a/<! (a/timeout heartbeat-msecs))
+        (loop []
+          (when (and (not (realized? p))
+                     (< (long (/ (- (System/currentTimeMillis) start) 1000)) heartbeat-timeout))
+            (log/debugf "message-id:%s heartbeat" (:message-id message))
+            (sqs/change-message-visibility client {:queue-url queue-url
+                                                   :receipt-handle (:receipt-handle message)
+                                                   :visibility-timeout (inc heartbeat)})
+            (a/<! (a/timeout heartbeat-msecs))
+            (recur)))))))
 
 (defn- start-workers
   [{:as consumer :keys [consume
@@ -64,9 +84,11 @@
     (a/go-loop []
       (when-let [message (a/<! message-chan)]
         (log/debugf "worker %s takes %s" i message)
-        (let [respond (partial respond consumer message)
-              raise (partial raise consumer message)]
+        (let [p (promise)
+              respond (partial respond* consumer p message)
+              raise (partial raise* consumer p message)]
           (try
+            (heartbeat* consumer p message)
             (consume message respond raise)
             (catch Throwable _
               (raise))))
@@ -83,7 +105,9 @@
    receive-limit
    long-polling-duration
    exceptional-poll-delay-ms
-   message-chan]
+   message-chan
+   heartbeat
+   heartbeat-timeout]
   p/IConsumer
   (-start [this]
     (let [this (assoc this :message-chan (a/chan message-channel-size))]
@@ -106,7 +130,9 @@
                  message-channel-size
                  receive-limit
                  long-polling-duration
-                 exceptional-poll-delay-ms]}]
+                 exceptional-poll-delay-ms
+                 heartbeat
+                 heartbeat-timeout]}]
   {:pre [(not (str/blank? queue-url))
          (ifn? consume)
          (instance? Client client)
@@ -116,5 +142,9 @@
          (pos? message-channel-size)
          (<= 1 receive-limit 10)
          (<= 0 long-polling-duration 20)
-         (pos? exceptional-poll-delay-ms)]}
+         (pos? exceptional-poll-delay-ms)
+         (or (= nil heartbeat heartbeat-timeout)
+             (and (integer? heartbeat) (integer? heartbeat-timeout)
+                  (<= 1 heartbeat 43199) (<= 2 heartbeat-timeout 43200)
+                  (< heartbeat heartbeat-timeout)))]}
   (map->Consumer m))
