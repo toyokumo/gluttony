@@ -9,6 +9,7 @@ You can use this library with Standard queue but it is almost designed for FIFO 
 [![Clojars Project](https://img.shields.io/clojars/v/toyokumo/gluttony.svg)](https://clojars.org/toyokumo/gluttony)
 
 ## Usage
+### Basis
 Gluttony mainly offer two APIs, `start-consumer` and `stop-consumer`.
 
 `start-consumer` makes a consumer instance.
@@ -55,6 +56,14 @@ if you don't provide it.
 such as the number of worker processes, long polling duration and so on.
 See [API docs](https://cljdoc.org/d/toyokumo/gluttony/CURRENT) for detail.
 
+### Heartbeat
+If you don't know how long it takes to process a message, pass `:hearbeat` and `:heartbeat-timeout` options.
+
+Then Gluttony extends the message visibility per `:hearbeat` seconds to `:heartbeat-timeout` seconds.
+
+See [AWS documents](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/working-with-messages.html) 
+for more detail. 
+
 ## What for?
 There already has been [Squeedo](https://github.com/TheClimateCorporation/squeedo) for the same purpose
 and it provides nice APIs and work as intended. Gluttony use it as reference so much.
@@ -71,10 +80,6 @@ or setting attributes.
 
 ## Test
 You may have to fix `dev-resources/test-config.edn`.
-
-## Future
-
-- Heartbeat support
 
 ## License
 
