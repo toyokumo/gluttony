@@ -4,7 +4,8 @@
    [clojure.core.async :as a]
    [clojure.java.io :as io]
    [clojure.test :refer :all]
-   [cognitect.aws.client.api :as aws]))
+   [cognitect.aws.client.api :as aws]
+   [unilog.config :as unilog]))
 
 (def config nil)
 
@@ -23,6 +24,11 @@
                                 true (aws/client))))
   (f)
   (aws/stop client))
+
+(defn start-logging-fixture [f]
+  (unilog/start-logging! {:level :debug
+                          :overrides {"org.eclipse.jetty" :info}})
+  (f))
 
 (defn wait-chan
   [timeout-msec done?]

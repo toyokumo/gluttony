@@ -14,4 +14,5 @@
                  [com.cognitect.aws/endpoints "1.1.11.705"]
                  [com.cognitect.aws/sqs "770.2.568.0"]]
   :repl-options {:init-ns gluttony.core}
-  :profiles {:dev {:dependencies [[aero "1.1.4"]]}})
+  :profiles {:dev {:dependencies [[aero "1.1.6"]
+                                  [spootnik/unilog "0.7.24"]]}})

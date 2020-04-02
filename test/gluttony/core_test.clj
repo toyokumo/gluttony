@@ -2,7 +2,6 @@
   (:require
    [clojure.core.async :as a]
    [clojure.edn :as edn]
-   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cognitect.aws.client.api :as aws]
    [gluttony.core :refer :all]
@@ -14,6 +13,8 @@
    (java.util UUID)))
 
 (use-fixtures :each th/read-config-fixture th/test-client-fixture)
+
+(use-fixtures :once th/start-logging-fixture)
 
 (deftest start-consumer-test
   (testing "No option"
