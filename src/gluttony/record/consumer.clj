@@ -37,7 +37,7 @@
                                 :messages
                                 (map r.msg/map->SQSMessage))]
               (when (seq messages)
-                (a/<! (a/onto-chan message-chan messages false))))
+                (a/<! (a/onto-chan! message-chan messages false))))
 
             :else
             (a/<! (a/timeout exceptional-poll-delay-ms)))
