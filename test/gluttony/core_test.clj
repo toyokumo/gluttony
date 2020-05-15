@@ -32,8 +32,10 @@
               :num-receivers (max 1 (int (/ num-workers 10)))
               :message-channel-size (* 20 (max 1 (int (/ num-workers 10))))
               :receive-limit 10
+              :consume-limit 0
               :long-polling-duration 20
               :exceptional-poll-delay-ms 10000
+              :consume-chan nil
               :heartbeat nil
               :heartbeat-timeout nil}
              (dissoc consumer :message-chan)))
@@ -47,6 +49,7 @@
                                     :num-receivers 1
                                     :message-channel-size 10
                                     :receive-limit 5
+                                    :consume-limit 10
                                     :heartbeat 60
                                     :heartbeat-timeout 300})]
       (is (instance? Consumer consumer))
@@ -58,11 +61,12 @@
               :num-receivers 1
               :message-channel-size 10
               :receive-limit 5
+              :consume-limit 10
               :long-polling-duration 20
               :exceptional-poll-delay-ms 10000
               :heartbeat 60
               :heartbeat-timeout 300}
-             (dissoc consumer :message-chan)))
+             (dissoc consumer :message-chan :consume-chan)))
       (stop-consumer consumer))))
 
 (deftest verify-work-of-receiver-and-worker
@@ -85,7 +89,7 @@
 
         (let [collected (atom [])
               consume (fn [message respond _]
-                        (log/info (:body message))
+                        (log/infof "start to consume:%s" (:body message))
                         (is (instance? gluttony.record.message.SQSMessage message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
@@ -112,7 +116,7 @@
 
         (let [collected (atom [])
               consume (fn [message respond _]
-                        (log/info (:body message))
+                        (log/infof "start to consume:%s" (:body message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
                         (respond))
@@ -138,7 +142,7 @@
 
         (let [collected (atom [])
               consume (fn [message respond _]
-                        (log/info (:body message))
+                        (log/infof "start to consume:%s" (:body message))
                         (a/go
                           ;; wait 3 seconds
                           (a/<! (a/timeout 3000))
@@ -155,4 +159,44 @@
           (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 1))))
           (is (= [1]
                  @collected))
+          (stop-consumer consumer)))
+
+      (testing "Check consume-limit"
+        ;; Add test data
+        (let [uuid (UUID/randomUUID)]
+          (dotimes [i 3]
+            (aws/invoke th/client {:op :SendMessage
+                                   :request {:QueueUrl queue-url
+                                             :MessageBody (pr-str {:id (inc i)})
+                                             :MessageDeduplicationId (str uuid ":" i)
+                                             :MessageGroupId (str uuid)}})))
+
+        (let [collected (atom [])
+              consume (fn [message respond _]
+                        (log/infof "start to consume:%s" (:body message))
+                        (a/go
+                          (is (instance? gluttony.record.message.SQSMessage message))
+                          (swap! collected
+                                 conj (:id (edn/read-string (:body message))))
+                          (a/<! (a/timeout 10))             ; Make a point of park
+                          (swap! collected
+                                 conj Integer/MIN_VALUE)
+                          (respond)))
+              consumer (start-consumer queue-url consume
+                                       {:client th/client
+                                        :num-workers 3
+                                        :num-receivers 1
+                                        :long-polling-duration 10
+                                        :consume-limit 1})]
+          (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 6))))
+          (is (= (set (range 1 4))
+                 (set (keep-indexed (fn [i v]
+                                      (when (even? i)
+                                        v))
+                                    @collected))))
+          (is (= [Integer/MIN_VALUE Integer/MIN_VALUE Integer/MIN_VALUE]
+                 (keep-indexed (fn [i v]
+                                 (when (odd? i)
+                                   v))
+                               @collected)))
           (stop-consumer consumer))))))
