@@ -103,14 +103,19 @@
    num-receivers
    message-channel-size
    receive-limit
+   consume-limit
    long-polling-duration
    exceptional-poll-delay-ms
    message-chan
+   consume-chan
    heartbeat
    heartbeat-timeout]
   p/IConsumer
   (-start [this]
-    (let [this (assoc this :message-chan (a/chan message-channel-size))]
+    (let [this (assoc this
+                      :message-chan (a/chan message-channel-size)
+                      :consume-chan (when (pos? consume-limit)
+                                      (a/chan consume-limit)))]
       (start-workers this)
       (start-receivers this)
       this))
@@ -129,6 +134,7 @@
                  num-receivers
                  message-channel-size
                  receive-limit
+                 consume-limit
                  long-polling-duration
                  exceptional-poll-delay-ms
                  heartbeat
@@ -141,6 +147,7 @@
          (pos? num-receivers)
          (pos? message-channel-size)
          (<= 1 receive-limit 10)
+         (<= 0 consume-limit 1024)
          (<= 0 long-polling-duration 20)
          (pos? exceptional-poll-delay-ms)
          (or (= nil heartbeat heartbeat-timeout)

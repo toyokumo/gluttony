@@ -32,8 +32,10 @@
               :num-receivers (max 1 (int (/ num-workers 10)))
               :message-channel-size (* 20 (max 1 (int (/ num-workers 10))))
               :receive-limit 10
+              :consume-limit 0
               :long-polling-duration 20
               :exceptional-poll-delay-ms 10000
+              :consume-chan nil
               :heartbeat nil
               :heartbeat-timeout nil}
              (dissoc consumer :message-chan)))
@@ -47,6 +49,7 @@
                                     :num-receivers 1
                                     :message-channel-size 10
                                     :receive-limit 5
+                                    :consume-limit 10
                                     :heartbeat 60
                                     :heartbeat-timeout 300})]
       (is (instance? Consumer consumer))
@@ -58,11 +61,12 @@
               :num-receivers 1
               :message-channel-size 10
               :receive-limit 5
+              :consume-limit 10
               :long-polling-duration 20
               :exceptional-poll-delay-ms 10000
               :heartbeat 60
               :heartbeat-timeout 300}
-             (dissoc consumer :message-chan)))
+             (dissoc consumer :message-chan :consume-chan)))
       (stop-consumer consumer))))
 
 (deftest verify-work-of-receiver-and-worker

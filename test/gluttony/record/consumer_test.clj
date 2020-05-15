@@ -17,6 +17,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "queue-url must not be blank")
@@ -28,7 +29,8 @@
                                 :num-workers 1
                                 :num-receivers 1
                                 :message-channel-size 10
-                                :receive-limit 10
+                                :receive-limit 1
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "consume must be a function")
@@ -41,6 +43,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "client must be a instance of cognitect.aws.client.Clinet")
@@ -53,6 +56,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "given-client? must be a boolean value")
@@ -65,6 +69,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "num-workers must be a positive value")
@@ -77,6 +82,7 @@
                                 :num-receivers 0
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "num-receivers must be a positive value")
@@ -89,6 +95,7 @@
                                 :num-receivers 1
                                 :message-channel-size 0
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "message-channel-size must be a positive value")
@@ -101,6 +108,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 11
+                                :consume-limit 0
                                 :long-polling-duration 10
                                 :exceptional-poll-delay-ms 1000}))
         "receive-limit must be between zero and ten")
@@ -113,6 +121,20 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 1025
+                                :long-polling-duration 10
+                                :exceptional-poll-delay-ms 1000}))
+        "consuem-limit must be between 0 and 1024")
+    (is (thrown? AssertionError
+                 (new-consumer {:queue-url "https://ap..."
+                                :consume (fn [_ _ _])
+                                :client client
+                                :given-client? true
+                                :num-workers 1
+                                :num-receivers 1
+                                :message-channel-size 10
+                                :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 21
                                 :exceptional-poll-delay-ms 1000}))
         "long-polling-duration must be between zero and twenty")
@@ -125,6 +147,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 20
                                 :exceptional-poll-delay-ms 0}))
         "exceptional-poll-delay-ms must be a positive value")
@@ -137,6 +160,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 20
                                 :exceptional-poll-delay-ms 0
                                 :heartbeat 60}))
@@ -150,6 +174,7 @@
                                 :num-receivers 1
                                 :message-channel-size 10
                                 :receive-limit 10
+                                :consume-limit 0
                                 :long-polling-duration 20
                                 :exceptional-poll-delay-ms 0
                                 :heartbeat 60

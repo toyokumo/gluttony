@@ -49,6 +49,11 @@
                                  default: 20 * num-receivers
     :receive-limit             - the number of messages to receive at a time. 1 to 10.
                                  default: 10
+    :consume-limit             - the number of processing messages at the same time. 0 to 1024
+                                 If the consume run asynchronously, for instance inside go block,
+                                 you may want to use this option.
+                                 default: 0, which means gluttony doesn't care about how many message
+                                 are processed simultaneously.
     :long-polling-duration     - the duration (in seconds) for which the call waits for a message to
                                  arrive in the queue before returning. 0 to 20.
                                  default: 20
@@ -81,6 +86,8 @@
                                  (* 20 num-receivers))
         receive-limit (or (:receive-limit opts)
                           10)
+        consume-limit (or (:consume-limit opts)
+                          0)
         long-polling-duration (or (:long-polling-duration opts)
                                   20)
         exceptional-poll-delay-ms (or (:exceptional-poll-delay-ms opts)
@@ -93,6 +100,7 @@
                                   :num-receivers num-receivers
                                   :message-channel-size message-channel-size
                                   :receive-limit receive-limit
+                                  :consume-limit consume-limit
                                   :long-polling-duration long-polling-duration
                                   :exceptional-poll-delay-ms exceptional-poll-delay-ms
                                   :heartbeat (:heartbeat opts)
