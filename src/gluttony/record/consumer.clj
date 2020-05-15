@@ -45,18 +45,28 @@
             (recur)))))))
 
 (defn- respond*
-  [{:keys [client queue-url]} p message]
+  [{:keys [client queue-url consume-chan]} p message]
   (deliver p :respond)
-  (sqs/delete-message client {:queue-url queue-url
-                              :receipt-handle (:receipt-handle message)}))
+  (a/go
+    (when consume-chan
+      ;; takes a sign and make a space in which next consume can work
+      (a/<! consume-chan)
+      (log/debugf "takes a sign of message-id:%s" (:message-id message)))
+    (a/<! (sqs/delete-message client {:queue-url queue-url
+                                      :receipt-handle (:receipt-handle message)}))))
 
 (defn- raise*
-  [{:keys [client queue-url]} p message & [retry-delay]]
+  [{:keys [client queue-url consume-chan]} p message & [retry-delay]]
   (deliver p :raise)
-  (let [retry-delay (or retry-delay 0)]
-    (sqs/change-message-visibility client {:queue-url queue-url
-                                           :receipt-handle (:receipt-handle message)
-                                           :visibility-timeout retry-delay})))
+  (a/go
+    (when consume-chan
+      ;; takes a sign and make a space in which next consume can work
+      (a/<! consume-chan)
+      (log/debugf "takes a sign of message-id:%s" (:message-id message)))
+    (let [retry-delay (or retry-delay 0)]
+      (a/<! (sqs/change-message-visibility client {:queue-url queue-url
+                                                   :receipt-handle (:receipt-handle message)
+                                                   :visibility-timeout retry-delay})))))
 
 (defn- heartbeat*
   "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
@@ -79,11 +89,16 @@
 (defn- start-workers
   [{:as consumer :keys [consume
                         num-workers
-                        message-chan]}]
+                        message-chan
+                        consume-chan]}]
   (dotimes [i num-workers]
     (a/go-loop []
       (when-let [message (a/<! message-chan)]
         (log/debugf "worker %s takes %s" i message)
+        (when consume-chan
+          ;; puts a sign which show a worker is now processing a message
+          (a/>! consume-chan :consuming)
+          (log/debugf "puts a sign of message-id:%s" (:message-id message)))
         (let [p (promise)
               respond (partial respond* consumer p message)
               raise (partial raise* consumer p message)]
@@ -122,6 +137,8 @@
   (-stop [_]
     (when message-chan
       (a/close! message-chan))
+    (when consume-chan
+      (a/close! consume-chan))
     (when (and client (not given-client?))
       (aws/stop client))))
 

@@ -89,7 +89,7 @@
 
         (let [collected (atom [])
               consume (fn [message respond _]
-                        (log/info (:body message))
+                        (log/infof "start to consume:%s" (:body message))
                         (is (instance? gluttony.record.message.SQSMessage message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
@@ -116,7 +116,7 @@
 
         (let [collected (atom [])
               consume (fn [message respond _]
-                        (log/info (:body message))
+                        (log/infof "start to consume:%s" (:body message))
                         (swap! collected
                                conj (:id (edn/read-string (:body message))))
                         (respond))
@@ -142,7 +142,7 @@
 
         (let [collected (atom [])
               consume (fn [message respond _]
-                        (log/info (:body message))
+                        (log/infof "start to consume:%s" (:body message))
                         (a/go
                           ;; wait 3 seconds
                           (a/<! (a/timeout 3000))
@@ -159,4 +159,32 @@
           (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 1))))
           (is (= [1]
                  @collected))
+          (stop-consumer consumer)))
+
+      (testing "Check consume-limit"
+        ;; Add test data
+        (let [uuid (UUID/randomUUID)]
+          (dotimes [i 3]
+            (aws/invoke th/client {:op :SendMessage
+                                   :request {:QueueUrl queue-url
+                                             :MessageBody (pr-str {:id (inc i)})
+                                             :MessageDeduplicationId (str uuid ":" i)
+                                             :MessageGroupId (str uuid)}})))
+
+        (let [collected (atom [])
+              consume (fn [message respond _]
+                        (log/infof "start to consume:%s" (:body message))
+                        (is (instance? gluttony.record.message.SQSMessage message))
+                        (swap! collected
+                               conj (:id (edn/read-string (:body message))))
+                        (respond))
+              consumer (start-consumer queue-url consume
+                                       {:client th/client
+                                        :num-workers 3
+                                        :num-receivers 1
+                                        :long-polling-duration 10
+                                        :consume-limit 1})]
+          (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 2))))
+          (is (= (set (range 1 4))
+                 (set @collected)))
           (stop-consumer consumer))))))
