@@ -188,7 +188,7 @@
                                         :num-receivers 1
                                         :long-polling-duration 10
                                         :consume-limit 1})]
-          (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 2))))
+          (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 6))))
           (is (= (set (range 1 4))
                  (set (keep-indexed (fn [i v]
                                       (when (even? i)
