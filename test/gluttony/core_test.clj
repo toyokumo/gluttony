@@ -174,10 +174,14 @@
         (let [collected (atom [])
               consume (fn [message respond _]
                         (log/infof "start to consume:%s" (:body message))
-                        (is (instance? gluttony.record.message.SQSMessage message))
-                        (swap! collected
-                               conj (:id (edn/read-string (:body message))))
-                        (respond))
+                        (a/go
+                          (is (instance? gluttony.record.message.SQSMessage message))
+                          (swap! collected
+                                 conj (:id (edn/read-string (:body message))))
+                          (a/<! (a/timeout 10))             ; Make a point of park
+                          (swap! collected
+                                 conj Integer/MIN_VALUE)
+                          (respond)))
               consumer (start-consumer queue-url consume
                                        {:client th/client
                                         :num-workers 3
@@ -186,5 +190,13 @@
                                         :consume-limit 1})]
           (a/<!! (th/wait-chan (* 1000 45) (fn [] (>= (count @collected) 2))))
           (is (= (set (range 1 4))
-                 (set @collected)))
+                 (set (keep-indexed (fn [i v]
+                                      (when (even? i)
+                                        v))
+                                    @collected))))
+          (is (= [Integer/MIN_VALUE Integer/MIN_VALUE Integer/MIN_VALUE]
+                 (keep-indexed (fn [i v]
+                                 (when (odd? i)
+                                   v))
+                               @collected)))
           (stop-consumer consumer))))))
