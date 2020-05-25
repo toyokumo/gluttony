@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.3.1
+Fix order to make a sign of consuming.
+
 ## 0.3.0
 Bump library versions.
 Add `:consume-limit` option.
