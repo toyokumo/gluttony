@@ -93,12 +93,11 @@
                         consume-chan]}]
   (dotimes [i num-workers]
     (a/go-loop []
+      (when consume-chan
+        ;; puts a sign which show a worker is now processing a message
+        (a/>! consume-chan :consuming))
       (when-let [message (a/<! message-chan)]
         (log/debugf "worker %s takes %s" i message)
-        (when consume-chan
-          ;; puts a sign which show a worker is now processing a message
-          (a/>! consume-chan :consuming)
-          (log/debugf "puts a sign of message-id:%s" (:message-id message)))
         (let [p (promise)
               respond (partial respond* consumer p message)
               raise (partial raise* consumer p message)]

@@ -66,6 +66,9 @@
                                  If it isn't set, heartbeat doesn't work.
                                  If it's set, :heartbeat-timeout is required.
                                  Refer to AWS documents for more detail: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/working-with-messages.html
+                                 If you set this option and :consume-limit, recommend to make
+                                 :consume-limit bigger than :message-channel-size so as not to block
+                                 heartbeat requests.
     :heartbeat-timeout         - the timeout (in seconds) of heartbeat.
                                  If your consume function doesn't call respond or raise within heartbeat
                                  timeout, the consumer doesn't extend message visibility any more.
