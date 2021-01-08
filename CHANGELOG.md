@@ -1,5 +1,8 @@
 # Change Log
 
+### 0.3.2
+Update dependencies (#6).
+
 ## 0.3.1
 Fix order to make a sign of consuming.
 
