@@ -9,7 +9,26 @@
 (deftest receive-message-test
   (testing "Assure aws-api schema doesn't change"
     (is (= {:name "ReceiveMessage"
-            :request {:AttributeNames [:seq-of 'string]
+            :request {:AttributeNames [:seq-of [:one-of ["All"
+                                                         "Policy"
+                                                         "VisibilityTimeout"
+                                                         "MaximumMessageSize"
+                                                         "MessageRetentionPeriod"
+                                                         "ApproximateNumberOfMessages"
+                                                         "ApproximateNumberOfMessagesNotVisible"
+                                                         "CreatedTimestamp"
+                                                         "LastModifiedTimestamp"
+                                                         "QueueArn"
+                                                         "ApproximateNumberOfMessagesDelayed"
+                                                         "DelaySeconds"
+                                                         "ReceiveMessageWaitTimeSeconds"
+                                                         "RedrivePolicy"
+                                                         "FifoQueue"
+                                                         "ContentBasedDeduplication"
+                                                         "KmsMasterKeyId"
+                                                         "KmsDataKeyReusePeriodSeconds"
+                                                         "DeduplicationScope"
+                                                         "FifoThroughputLimit"]]]
                       :MaxNumberOfMessages 'integer
                       :MessageAttributeNames [:seq-of 'string]
                       :QueueUrl 'string
@@ -18,7 +37,17 @@
                       :WaitTimeSeconds 'integer}
             :required [:QueueUrl]
             :response {:Messages [:seq-of
-                                  {:Attributes [:map-of 'string 'string]
+                                  {:Attributes [:map-of
+                                                [:one-of
+                                                 ["SenderId"
+                                                  "SentTimestamp"
+                                                  "ApproximateReceiveCount"
+                                                  "ApproximateFirstReceiveTimestamp"
+                                                  "SequenceNumber"
+                                                  "MessageDeduplicationId"
+                                                  "MessageGroupId"
+                                                  "AWSTraceHeader"]]
+                                                'string]
                                    :Body 'string
                                    :MD5OfBody 'string
                                    :MD5OfMessageAttributes 'string

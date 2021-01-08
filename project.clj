@@ -7,12 +7,12 @@
                         ["snapshots" :clojars]]
   :plugins [[lein-ancient "0.6.15"]]
   :dependencies [[org.clojure/clojure "1.10.1"]
-                 [org.clojure/core.async "1.2.603"]
+                 [org.clojure/core.async "1.3.610"]
                  [org.clojure/tools.logging "1.1.0"]
-                 [camel-snake-kebab "0.4.1"]
-                 [com.cognitect.aws/api "0.8.456"]
-                 [com.cognitect.aws/endpoints "1.1.11.774"]
-                 [com.cognitect.aws/sqs "770.2.568.0"]]
+                 [camel-snake-kebab "0.4.2"]
+                 [com.cognitect.aws/api "0.8.484"]
+                 [com.cognitect.aws/endpoints "1.1.11.926"]
+                 [com.cognitect.aws/sqs "810.2.817.0"]]
   :repl-options {:init-ns gluttony.core}
   :profiles {:dev {:dependencies [[aero "1.1.6"]
-                                  [spootnik/unilog "0.7.25"]]}})
+                                  [spootnik/unilog "0.7.27"]]}})
