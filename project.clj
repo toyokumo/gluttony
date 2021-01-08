@@ -1,4 +1,4 @@
-(defproject toyokumo/gluttony "0.3.2"
+(defproject toyokumo/gluttony "0.3.3-SNAPSHOT"
   :description "A consumer library using core.async and aws-api based on AWS SQS"
   :url "https://github.com/toyokumo/gluttony"
   :license {:name "Apache, Version 2.0"
