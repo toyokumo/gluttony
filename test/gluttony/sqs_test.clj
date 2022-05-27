@@ -1,7 +1,7 @@
 (ns gluttony.sqs-test
   (:require
-   [cognitect.aws.client.api :as aws]
    [clojure.test :refer :all]
+   [cognitect.aws.client.api :as aws]
    [gluttony.test-helper :refer [client test-client-fixture]]))
 
 (use-fixtures :once test-client-fixture)
