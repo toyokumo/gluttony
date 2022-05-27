@@ -1,6 +1,8 @@
 # Change Log
 
-### 0.3.2
+## [Unreleased]
+
+## 0.3.2
 Update dependencies (#6).
 
 ## 0.3.1
