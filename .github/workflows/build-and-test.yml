@@ -1,0 +1,54 @@
+name: Build and Test
+
+on:
+  push:
+    tags-ignore:
+      - '*'
+    branches:
+      - '*'
+
+jobs:
+  buid-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+          java-package: jdk
+          architecture: x64
+
+      - uses: DeLaGuardo/setup-clojure@master
+        with:
+          cli: latest
+
+      - uses: 0918nobita/setup-cljstyle@v0.5.4
+        with:
+          cljstyle-version: '0.15.0'
+
+      - uses: DeLaGuardo/setup-clj-kondo@master
+        with:
+          version: '2022.04.25'
+
+      - name: Show versions
+        run: |
+          java -version
+          clojure --version
+          cljstyle version
+          clj-kondo --version
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: clj-cache-${{ hashFiles('**/deps.edn') }}
+          restore-keys: |
+            clj-cache-
+
+      - name: Lint
+        run: make lint
+
+      - name: Test
+        run: make test

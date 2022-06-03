@@ -1,10 +1,11 @@
 (ns gluttony.core
   (:require
    [cognitect.aws.client.api :as aws]
-   [gluttony.record.consumer :as c]
-   [gluttony.protocols :as p])
+   [gluttony.protocols :as p]
+   [gluttony.record.consumer :as c])
   (:import
-   (gluttony.record.consumer Consumer)))
+   (gluttony.record.consumer
+    Consumer)))
 
 (defn start-consumer
   "Creates a consumer and run it.

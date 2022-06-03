@@ -1,6 +1,10 @@
 # Change Log
 
-### 0.3.2
+## [Unreleased]
+### Changed
+* Updated to use Clojure CLI instead of Leiningen.
+
+## 0.3.2
 Update dependencies (#6).
 
 ## 0.3.1

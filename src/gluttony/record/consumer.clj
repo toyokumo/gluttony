@@ -9,7 +9,8 @@
    [gluttony.record.message :as r.msg]
    [gluttony.sqs :as sqs])
   (:import
-   (cognitect.aws.client Client)))
+   (cognitect.aws.client
+    Client)))
 
 (defn- start-receivers
   [{:keys [client

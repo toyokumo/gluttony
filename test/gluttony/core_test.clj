@@ -2,15 +2,17 @@
   (:require
    [clojure.core.async :as a]
    [clojure.edn :as edn]
+   [clojure.string :as str]
    [clojure.test :refer :all]
+   [clojure.tools.logging :as log]
    [cognitect.aws.client.api :as aws]
    [gluttony.core :refer :all]
-   [gluttony.test-helper :as th]
-   [clojure.string :as str]
-   [clojure.tools.logging :as log])
+   [gluttony.test-helper :as th])
   (:import
-   (gluttony.record.consumer Consumer)
-   (java.util UUID)))
+   (gluttony.record.consumer
+    Consumer)
+   (java.util
+    UUID)))
 
 (use-fixtures :each th/read-config-fixture th/test-client-fixture)
 
