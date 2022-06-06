@@ -3,7 +3,6 @@
    [aero.core :as aero]
    [clojure.core.async :as a]
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
    [cognitect.aws.client.api :as aws]
    [unilog.config :as unilog]))
 
@@ -14,16 +13,18 @@
 (defn read-config-fixture [f]
   (alter-var-root #'config
                   (constantly (some-> (io/resource "test-config.edn")
-                                      (aero/read-config))))
+                                      (aero/read-config {:profile :dev}))))
   (f))
 
 (defn test-client-fixture [f]
-  (alter-var-root #'client
-                  (constantly (cond-> {:api :sqs}
-                                (:region config) (assoc :region (:region config))
-                                true (aws/client))))
-  (f)
-  (aws/stop client))
+  (let [{:keys [region endpoint]} config]
+    (alter-var-root #'client
+                    (constantly (cond-> {:api :sqs}
+                                  region (assoc :region region)
+                                  endpoint (assoc :endpoint-override endpoint)
+                                  true (aws/client))))
+    (f)
+    (aws/stop client)))
 
 (defn start-logging-fixture [f]
   (unilog/start-logging! {:level :debug
