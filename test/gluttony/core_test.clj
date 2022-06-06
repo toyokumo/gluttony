@@ -75,7 +75,6 @@
   (when (:queue-name th/config)
     (let [req {:QueueName (:queue-name th/config)}
           queue-url (:QueueUrl (aws/invoke th/client {:op :GetQueueUrl :request req}))]
-      (assert (str/starts-with? queue-url "https"))
       ;; Make queue empty
       (aws/invoke th/client {:op :PurgeQueue :request {:QueueUrl queue-url}})
 
