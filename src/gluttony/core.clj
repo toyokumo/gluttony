@@ -118,13 +118,13 @@
   [^Consumer consumer]
   (p/-stop consumer))
 
-(defn disable-receivers
+(defn stop-receivers
   "Stop fetching messages from AWS SQS.
   WARN: Receivers during long-polling are not canceled."
   [^Consumer consumer]
   (p/-disable-receivers consumer))
 
-(defn enable-receivers
+(defn start-receivers
   "Start fetching messages from AWS SQS."
   [^Consumer consumer]
   (p/-enable-receivers consumer))

@@ -233,14 +233,14 @@
         (is (= 1
                @message-count)
             "message received")
-        (disable-receivers consumer)
+        (stop-receivers consumer)
         ;; wait for finishing long-polling
         (a/<!! (a/timeout 1000))
         (send-message)
         (is (= 1
                @message-count)
             "message not received")
-        (enable-receivers consumer)
+        (start-receivers consumer)
         (a/<!! (th/wait-chan (* 1000) (fn [] (>= @message-count 2))))
         (is (= 2
                @message-count)
