@@ -124,7 +124,8 @@
    message-chan
    consume-chan
    heartbeat
-   heartbeat-timeout]
+   heartbeat-timeout
+   receiver-enabled]
   p/IConsumer
   (-start [this]
     (let [this (assoc this
@@ -140,7 +141,15 @@
     (when consume-chan
       (a/close! consume-chan))
     (when (and client (not given-client?))
-      (aws/stop client))))
+      (aws/stop client)))
+  (-enable-receivers [this]
+    (update this :receiver-enabled (fn [atm]
+                                     (reset! atm true)
+                                     atm)))
+  (-disable-receivers [this]
+    (update this :receiver-enabled (fn [atm]
+                                     (reset! atm false)
+                                     atm))))
 
 (defn new-consumer
   [{:as m :keys [queue-url

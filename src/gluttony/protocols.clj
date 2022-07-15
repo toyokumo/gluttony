@@ -2,4 +2,6 @@
 
 (defprotocol IConsumer
   (-start [this])
-  (-stop [this]))
+  (-stop [this])
+  (-enable-receivers [this])
+  (-disable-receivers [this]))
