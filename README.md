@@ -4,7 +4,7 @@ and [aws-api](https://github.com/cognitect-labs/aws-api) based on AWS SQS.
 
 You can use this library with Standard queue but it is almost designed for FIFO queue.
 
-[![CircleCI](https://circleci.com/gh/toyokumo/gluttony.svg?style=svg)](https://circleci.com/gh/toyokumo/gluttony)
+[![Build and Test](https://github.com/toyokumo/gluttony/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/toyokumo/gluttony/actions/workflows/build-and-test.yml)
 [![cljdoc badge](https://cljdoc.org/badge/toyokumo/gluttony)](https://cljdoc.org/d/toyokumo/gluttony/CURRENT)
 [![Clojars Project](https://img.shields.io/clojars/v/toyokumo/gluttony.svg)](https://clojars.org/toyokumo/gluttony)
 
