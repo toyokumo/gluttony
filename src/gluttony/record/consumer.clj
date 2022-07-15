@@ -19,7 +19,8 @@
            receive-limit
            long-polling-duration
            exceptional-poll-delay-ms
-           message-chan]}]
+           message-chan
+           receiver-enabled]}]
   (let [req {:queue-url queue-url
              :attribute-names ["All"]
              :message-attribute-names ["All"]
@@ -27,23 +28,26 @@
              :wait-time-seconds long-polling-duration}]
     (dotimes [i num-receivers]
       (a/go-loop []
-        (let [res (a/<! (sqs/receive-message client req))]
-          (log/debugf "receiver %s receives %s" i res)
-          (cond
-            (empty? res)
-            nil
+        (if @receiver-enabled
+          (let [res (a/<! (sqs/receive-message client req))]
+            (log/debugf "receiver %s receives %s" i res)
+            (cond
+              (empty? res)
+              nil
 
-            (= (set (keys res)) #{:messages})
-            (let [messages (->> res
-                                :messages
-                                (map r.msg/map->SQSMessage))]
-              (when (seq messages)
-                (a/<! (a/onto-chan! message-chan messages false))))
+              (= (set (keys res)) #{:messages})
+              (let [messages (->> res
+                                  :messages
+                                  (map r.msg/map->SQSMessage))]
+                (when (seq messages)
+                  (a/<! (a/onto-chan! message-chan messages false))))
 
-            :else
-            (a/<! (a/timeout exceptional-poll-delay-ms)))
-          (when-not (a.i.p/closed? message-chan)
-            (recur)))))))
+              :else
+              (a/<! (a/timeout exceptional-poll-delay-ms)))
+            (when-not (a.i.p/closed? message-chan)
+              (recur)))
+          (do (a/<! (a/timeout 1000))
+              (recur)))))))
 
 (defn- respond*
   [{:keys [client queue-url consume-chan]} p message]
