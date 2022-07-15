@@ -108,7 +108,8 @@
                                   :long-polling-duration long-polling-duration
                                   :exceptional-poll-delay-ms exceptional-poll-delay-ms
                                   :heartbeat (:heartbeat opts)
-                                  :heartbeat-timeout (:heartbeat-timeout opts)})]
+                                  :heartbeat-timeout (:heartbeat-timeout opts)
+                                  :receiver-enabled (atom true)})]
     (p/-start consumer)))
 
 (defn stop-consumer
@@ -116,3 +117,14 @@
    in start-consumer. This should be called to stopped consuming messages."
   [^Consumer consumer]
   (p/-stop consumer))
+
+(defn stop-receivers
+  "Stop fetching messages from AWS SQS.
+  WARN: Receivers during long-polling are not canceled."
+  [^Consumer consumer]
+  (p/-disable-receivers consumer))
+
+(defn start-receivers
+  "Start fetching messages from AWS SQS."
+  [^Consumer consumer]
+  (p/-enable-receivers consumer))

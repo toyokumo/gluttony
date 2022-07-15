@@ -2,7 +2,6 @@
   (:require
    [clojure.core.async :as a]
    [clojure.edn :as edn]
-   [clojure.string :as str]
    [clojure.test :refer :all]
    [clojure.tools.logging :as log]
    [cognitect.aws.client.api :as aws]
@@ -40,7 +39,7 @@
               :consume-chan nil
               :heartbeat nil
               :heartbeat-timeout nil}
-             (dissoc consumer :message-chan)))
+             (dissoc consumer :message-chan :receiver-enabled)))
       (stop-consumer consumer)))
 
   (testing "Give some options"
@@ -68,7 +67,7 @@
               :exceptional-poll-delay-ms 10000
               :heartbeat 60
               :heartbeat-timeout 300}
-             (dissoc consumer :message-chan :consume-chan)))
+             (dissoc consumer :message-chan :consume-chan :receiver-enabled)))
       (stop-consumer consumer))))
 
 (deftest verify-work-of-receiver-and-worker
@@ -201,3 +200,49 @@
                                    v))
                                @collected)))
           (stop-consumer consumer))))))
+
+(deftest disable-and-enable-receivers-test
+  (when (:queue-name th/config)
+    (let [req {:QueueName (:queue-name th/config)}
+          queue-url (:QueueUrl (aws/invoke th/client {:op :GetQueueUrl :request req}))]
+      (log/debug queue-url)
+      ;; Make queue empty
+      (aws/invoke th/client {:op :PurgeQueue :request {:QueueUrl queue-url}})
+      ;; wait for finishing long-polling in other tests
+      (a/<!! (a/timeout 10000))
+      (let [message-count (atom 0)
+            consume (fn [message respond _]
+                      (log/infof "start to consume:%s" (:body message))
+                      (swap! message-count inc)
+                      (respond))
+            consumer (start-consumer queue-url consume
+                                     {:client th/client
+                                      :num-workers 1
+                                      :num-receivers 1
+                                      :long-polling-duration 1})
+            send-message (fn []
+                           (let [uuid (UUID/randomUUID)]
+                             (aws/invoke th/client {:op :SendMessage
+                                                    :request {:QueueUrl queue-url
+                                                              :MessageBody (pr-str {:id uuid})
+                                                              :MessageDeduplicationId (str uuid)
+                                                              :MessageGroupId (str uuid)}})
+                             (a/<!! (a/timeout 2000))))]
+        (send-message)
+        (a/<!! (th/wait-chan (* 1000) (fn [] (>= @message-count 1))))
+        (is (= 1
+               @message-count)
+            "message received")
+        (stop-receivers consumer)
+        ;; wait for finishing long-polling
+        (a/<!! (a/timeout 1000))
+        (send-message)
+        (is (= 1
+               @message-count)
+            "message not received")
+        (start-receivers consumer)
+        (a/<!! (th/wait-chan (* 1000) (fn [] (>= @message-count 2))))
+        (is (= 2
+               @message-count)
+            "message received")
+        (stop-consumer consumer)))))
