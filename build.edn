@@ -1,5 +1,5 @@
 {:lib toyokumo/gluttony
- :version "0.3.{{git/commit-count}}"
+ :version "0.4.{{git/commit-count}}"
  :documents [{:file "CHANGELOG.md"
               :match "Unreleased"
               :action :append-after
