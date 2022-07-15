@@ -19,6 +19,12 @@ and invoke your `consume` function.
 `stop-consumer` takes a consumer created by `start-consumer`, and stop all processes and the client
 if you don't provide it.
 
+After calling `stop-consumer`, the consumer doesn't make a new `consume` function call,
+but it doesn't immediately stop long polling access to AWS SQS.
+The message acquired by long polling is not processed by the consumer and becomes an "invisible message" until the visibility timeout elapses.
+
+To prevent that, call `stop-receivers` before calling `stop-consumer` and wait for the number of seconds specified by `long-polling` option (default: 20).
+
 ```clojure
 (require '[clojure.core.async :as a]
          '[gluttony.core :as gluttony])
