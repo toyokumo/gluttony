@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 * Updated to use Clojure CLI instead of Leiningen.
+* Add `start-receivers` and `stop-receivers` functions.
 
 ## 0.3.2
 Update dependencies (#6).
