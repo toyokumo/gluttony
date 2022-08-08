@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### Fixed
+* Fixed `respond` and `raise` not to take extra signs when these functions are called more than once.
 
 ## 0.4.87
 ### Changed

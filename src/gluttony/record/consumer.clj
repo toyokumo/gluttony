@@ -51,27 +51,31 @@
 
 (defn- respond*
   [{:keys [client queue-url consume-chan]} p message]
-  (deliver p :respond)
-  (a/go
-    (when consume-chan
-      ;; takes a sign and make a space in which next consume can work
-      (a/<! consume-chan)
-      (log/debugf "takes a sign of message-id:%s" (:message-id message)))
-    (a/<! (sqs/delete-message client {:queue-url queue-url
-                                      :receipt-handle (:receipt-handle message)}))))
+  (let [already-realized? (realized? p)]
+    (deliver p :respond)
+    (a/go
+      (when (and consume-chan
+                 (not already-realized?))
+        ;; takes a sign and make a space in which next consume can work
+        (a/<! consume-chan)
+        (log/debugf "takes a sign of message-id:%s" (:message-id message)))
+      (a/<! (sqs/delete-message client {:queue-url queue-url
+                                        :receipt-handle (:receipt-handle message)})))))
 
 (defn- raise*
   [{:keys [client queue-url consume-chan]} p message & [retry-delay]]
-  (deliver p :raise)
-  (a/go
-    (when consume-chan
-      ;; takes a sign and make a space in which next consume can work
-      (a/<! consume-chan)
-      (log/debugf "takes a sign of message-id:%s" (:message-id message)))
-    (let [retry-delay (or retry-delay 0)]
-      (a/<! (sqs/change-message-visibility client {:queue-url queue-url
-                                                   :receipt-handle (:receipt-handle message)
-                                                   :visibility-timeout retry-delay})))))
+  (let [already-realized? (realized? p)]
+    (deliver p :raise)
+    (a/go
+      (when (and consume-chan
+                 (not already-realized?))
+        ;; takes a sign and make a space in which next consume can work
+        (a/<! consume-chan)
+        (log/debugf "takes a sign of message-id:%s" (:message-id message)))
+      (let [retry-delay (or retry-delay 0)]
+        (a/<! (sqs/change-message-visibility client {:queue-url queue-url
+                                                     :receipt-handle (:receipt-handle message)
+                                                     :visibility-timeout retry-delay}))))))
 
 (defn- heartbeat*
   "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
