@@ -181,6 +181,8 @@
                           (a/<! (a/timeout 10))             ; Make a point of park
                           (swap! collected
                                  conj Integer/MIN_VALUE)
+                          (respond)
+                          ;; Respond twice on purpose
                           (respond)))
               consumer (start-consumer queue-url consume
                                        {:client th/client
