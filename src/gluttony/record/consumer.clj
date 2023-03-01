@@ -79,7 +79,7 @@
 
 (defn- heartbeat*
   "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
-  [{:keys [client queue-url heartbeat heartbeat-timeout]} p message]
+  [{:keys [client queue-url heartbeat heartbeat-timeout visibility-timeout-in-heartbeat]} p message]
   (when heartbeat
     (let [heartbeat-msecs (* heartbeat 1000)
           start (System/currentTimeMillis)]
@@ -91,7 +91,7 @@
             (log/debugf "message-id:%s heartbeat" (:message-id message))
             (sqs/change-message-visibility client {:queue-url queue-url
                                                    :receipt-handle (:receipt-handle message)
-                                                   :visibility-timeout (inc heartbeat)})
+                                                   :visibility-timeout visibility-timeout-in-heartbeat})
             (a/<! (a/timeout heartbeat-msecs))
             (recur)))))))
 
@@ -133,6 +133,7 @@
    consume-chan
    heartbeat
    heartbeat-timeout
+   visibility-timeout-in-heartbeat
    receiver-enabled]
   p/IConsumer
   (-start [this]
@@ -172,7 +173,8 @@
                  long-polling-duration
                  exceptional-poll-delay-ms
                  heartbeat
-                 heartbeat-timeout]}]
+                 heartbeat-timeout
+                 visibility-timeout-in-heartbeat]}]
   {:pre [(not (str/blank? queue-url))
          (ifn? consume)
          (instance? Client client)
@@ -187,5 +189,8 @@
          (or (= nil heartbeat heartbeat-timeout)
              (and (integer? heartbeat) (integer? heartbeat-timeout)
                   (<= 1 heartbeat 43199) (<= 2 heartbeat-timeout 43200)
-                  (< heartbeat heartbeat-timeout)))]}
+                  (< heartbeat heartbeat-timeout)))
+         (or (nil? heartbeat)
+             (and (integer? visibility-timeout-in-heartbeat)
+                  (< heartbeat visibility-timeout-in-heartbeat)))]}
   (map->Consumer m))
