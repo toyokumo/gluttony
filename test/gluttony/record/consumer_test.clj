@@ -177,7 +177,7 @@
                          :receive-limit 10
                          :consume-limit 0
                          :long-polling-duration 20
-                         :exceptional-poll-delay-ms 0
+                         :exceptional-poll-delay-ms 1000
                          :heartbeat 60
                          :heartbeat-timeout 10
                          :visibility-timeout-in-heartbeat 61}))
