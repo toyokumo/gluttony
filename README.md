@@ -65,7 +65,8 @@ See [API docs](https://cljdoc.org/d/toyokumo/gluttony/CURRENT) for detail.
 ### Heartbeat
 If you don't know how long it takes to process a message, pass `:hearbeat` and `:heartbeat-timeout` options.
 
-Then Gluttony extends the message visibility per `:hearbeat` seconds to `:heartbeat-timeout` seconds.
+Then Gluttony extends the message visibility per `:hearbeat` seconds to `:hearbeat + 1` seconds.
+(Extended seconds is configurable by `:visibility-timeout-in-heartbeat` option)
 
 See [AWS documents](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/working-with-messages.html) 
 for more detail. 

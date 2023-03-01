@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+* Add `:visibility-timeout-in-heartbeat` option to control visibility timeout in heartbeat mode.
 
 ## 0.4.91
 ### Fixed
