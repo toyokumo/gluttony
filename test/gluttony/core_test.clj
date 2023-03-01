@@ -38,7 +38,8 @@
               :exceptional-poll-delay-ms 10000
               :consume-chan nil
               :heartbeat nil
-              :heartbeat-timeout nil}
+              :heartbeat-timeout nil
+              :visibility-timeout-in-heartbeat nil}
              (dissoc consumer :message-chan :receiver-enabled)))
       (stop-consumer consumer)))
 
@@ -66,7 +67,8 @@
               :long-polling-duration 20
               :exceptional-poll-delay-ms 10000
               :heartbeat 60
-              :heartbeat-timeout 300}
+              :heartbeat-timeout 300
+              :visibility-timeout-in-heartbeat 61}
              (dissoc consumer :message-chan :consume-chan :receiver-enabled)))
       (stop-consumer consumer))))
 

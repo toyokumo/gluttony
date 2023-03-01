@@ -163,7 +163,8 @@
                          :consume-limit 0
                          :long-polling-duration 20
                          :exceptional-poll-delay-ms 0
-                         :heartbeat 60}))
+                         :heartbeat 60
+                         :visibility-timeout-in-heartbeat 61}))
         "heartbeat is set but heartbeat-timeout isn't set")
     (is (thrown? AssertionError
           (new-consumer {:queue-url "https://ap..."
@@ -178,5 +179,37 @@
                          :long-polling-duration 20
                          :exceptional-poll-delay-ms 0
                          :heartbeat 60
-                         :heartbeat-timeout 10}))
-        "heartbeat is bigger than heartbeat-timeout")))
+                         :heartbeat-timeout 10
+                         :visibility-timeout-in-heartbeat 61}))
+        "heartbeat is bigger than heartbeat-timeout")
+    (is (thrown? AssertionError
+          (new-consumer {:queue-url "https://ap..."
+                         :consume (fn [_ _ _])
+                         :client client
+                         :given-client? true
+                         :num-workers 1
+                         :num-receivers 1
+                         :message-channel-size 10
+                         :receive-limit 10
+                         :consume-limit 0
+                         :long-polling-duration 20
+                         :exceptional-poll-delay-ms 1000
+                         :heartbeat 60
+                         :heartbeat-timeout 300}))
+        "heartbeat is set but visibility-timeout-in-heartbeat isn't set")
+    (is (thrown? AssertionError
+          (new-consumer {:queue-url "https://ap..."
+                         :consume (fn [_ _ _])
+                         :client client
+                         :given-client? true
+                         :num-workers 1
+                         :num-receivers 1
+                         :message-channel-size 10
+                         :receive-limit 10
+                         :consume-limit 0
+                         :long-polling-duration 20
+                         :exceptional-poll-delay-ms 1000
+                         :heartbeat 60
+                         :heartbeat-timeout 300
+                         :visibility-timeout-in-heartbeat 59}))
+        "heartbeat is bigger than visibility-timeout-in-heartbeat")))
