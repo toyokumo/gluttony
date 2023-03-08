@@ -28,7 +28,9 @@
                                                          "KmsMasterKeyId"
                                                          "KmsDataKeyReusePeriodSeconds"
                                                          "DeduplicationScope"
-                                                         "FifoThroughputLimit"]]]
+                                                         "FifoThroughputLimit"
+                                                         "RedriveAllowPolicy"
+                                                         "SqsManagedSseEnabled"]]]
                       :MaxNumberOfMessages 'integer
                       :MessageAttributeNames [:seq-of 'string]
                       :QueueUrl 'string
@@ -69,8 +71,7 @@
             :request {:QueueUrl 'string
                       :ReceiptHandle 'string}
             :required [:QueueUrl
-                       :ReceiptHandle]
-            :response nil}
+                       :ReceiptHandle]}
            (-> (aws/ops client)
                :DeleteMessage
                (dissoc :documentation))))))
@@ -83,8 +84,7 @@
                       :VisibilityTimeout 'integer}
             :required [:QueueUrl
                        :ReceiptHandle
-                       :VisibilityTimeout]
-            :response nil}
+                       :VisibilityTimeout]}
            (-> (aws/ops client)
                :ChangeMessageVisibility
                (dissoc :documentation))))))
