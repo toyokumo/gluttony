@@ -1,22 +1,22 @@
 {:paths ["src"]
- :deps {org.clojure/clojure {:mvn/version "1.10.1"}
-        org.clojure/core.async {:mvn/version "1.3.610"}
-        org.clojure/tools.logging {:mvn/version "1.1.0"}
-        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
-        com.cognitect.aws/api {:mvn/version "0.8.484"}
-        com.cognitect.aws/endpoints {:mvn/version "1.1.11.926"}
-        com.cognitect.aws/sqs {:mvn/version "810.2.817.0"}}
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+        org.clojure/core.async {:mvn/version "1.6.673"}
+        org.clojure/tools.logging {:mvn/version "1.2.4"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+        com.cognitect.aws/api {:mvn/version "0.8.652"}
+        com.cognitect.aws/endpoints {:mvn/version "1.1.12.415"}
+        com.cognitect.aws/sqs {:mvn/version "822.2.1109.0"}}
 
  :aliases
  {:dev {:extra-paths ["test" "dev-resources"]
         :extra-deps {aero/aero {:mvn/version "1.1.6"}
-                     spootnik/unilog {:mvn/version "0.7.27"}
-                     lambdaisland/kaocha {:mvn/version "1.60.977"}}}
+                     spootnik/unilog {:mvn/version "0.7.31"}
+                     lambdaisland/kaocha {:mvn/version "1.80.1274"}}}
 
   :test {:main-opts ["-m" "kaocha.runner"]}
 
   :outdated {:deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}
              :main-opts ["-m" "antq.core"]}
 
-  :build {:deps {com.github.liquidz/build.edn {:git/tag "0.3.90" :git/sha "e3a3e31"}}
+  :build {:deps {com.github.liquidz/build.edn {:git/tag "0.9.203" :git/sha "b276908"}}
           :ns-default build-edn.main}}}
