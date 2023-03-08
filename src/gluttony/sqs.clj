@@ -4,13 +4,13 @@
    [camel-snake-kebab.core :as csk]
    [camel-snake-kebab.extras :as cske]
    [clojure.core.async :as a]
-   [cognitect.aws.client.api.async :as aws-async]))
+   [cognitect.aws.client.api :as aws]))
 
 (defn- invoke-async
   [client op-map]
   (let [op-map (update op-map :request #(cske/transform-keys csk/->PascalCaseKeyword %))]
     (a/go
-      (when-let [res (a/<! (aws-async/invoke client op-map))]
+      (when-let [res (a/<! (aws/invoke-async client op-map))]
         (cske/transform-keys csk/->kebab-case-keyword res)))))
 
 (defn receive-message
