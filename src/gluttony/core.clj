@@ -1,6 +1,5 @@
 (ns gluttony.core
   (:require
-   [cognitect.aws.client.api :as aws]
    [gluttony.protocols :as p]
    [gluttony.record.consumer :as c])
   (:import
@@ -37,10 +36,9 @@
                   (if success?
                     (respond)
                     (raise 10))))
+    client - An instance of gluttony.protocols/ISqsClient.
 
    Optional arguments:
-    :client                          - the SQS client, which is the instance of cognitect.aws.client.Client.
-                                       if missing, cognitect.aws.client.api/client would be called.
     :num-workers                     - the number of workers processing messages concurrently.
                                        default: (Runtime/availableProcessors) - 1
     :num-receivers                   - the number of receivers polling from sqs.
@@ -81,11 +79,8 @@
                                        :visibility-timeout-in-heartbeat must be longer than :heartbeat.
    Output:
     a instance of gluttony.record.consumer.Consumer"
-  ^Consumer [queue-url consume & [opts]]
-  (let [client (or (:client opts)
-                   (aws/client {:api :sqs}))
-        given-client? (some? (:client opts))
-        num-workers (or (:num-workers opts)
+  ^Consumer [queue-url consume client & [opts]]
+  (let [num-workers (or (:num-workers opts)
                         (max 1 (dec (.availableProcessors (Runtime/getRuntime)))))
         num-receivers (or (:num-receivers opts)
                           (max 1 (int (/ num-workers 10))))
@@ -105,7 +100,6 @@
         consumer (c/new-consumer {:queue-url queue-url
                                   :consume consume
                                   :client client
-                                  :given-client? given-client?
                                   :num-workers num-workers
                                   :num-receivers num-receivers
                                   :message-channel-size message-channel-size

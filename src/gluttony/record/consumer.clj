@@ -4,13 +4,10 @@
    [clojure.core.async.impl.protocols :as a.i.p]
    [clojure.string :as str]
    [clojure.tools.logging :as log]
-   [cognitect.aws.client.api :as aws]
-   [gluttony.protocols :as p]
-   [gluttony.record.message :as r.msg]
-   [gluttony.sqs :as sqs])
+   [gluttony.protocols :as p])
   (:import
-   (cognitect.aws.client.impl
-    Client)))
+   (gluttony.protocols
+    ISqsClient)))
 
 (defn- start-receivers
   [{:keys [client
@@ -22,27 +19,19 @@
            message-chan
            receiver-enabled]}]
   (let [req {:queue-url queue-url
-             :attribute-names ["All"]
-             :message-attribute-names ["All"]
              :max-number-of-messages receive-limit
              :wait-time-seconds long-polling-duration}]
     (dotimes [i num-receivers]
       (a/go-loop []
         (if @receiver-enabled
-          (let [res (a/<! (sqs/receive-message client req))]
+          (let [{:keys [messages error] :as res} (a/<! (p/receive-message client req))]
             (log/debugf "receiver %s receives %s" i res)
             (cond
-              (empty? res)
-              nil
+              messages
+              (when (seq messages)
+                (a/<! (a/onto-chan! message-chan messages false)))
 
-              (= (set (keys res)) #{:messages})
-              (let [messages (->> res
-                                  :messages
-                                  (map r.msg/map->SQSMessage))]
-                (when (seq messages)
-                  (a/<! (a/onto-chan! message-chan messages false))))
-
-              :else
+              error
               (a/<! (a/timeout exceptional-poll-delay-ms)))
             (when-not (a.i.p/closed? message-chan)
               (recur)))
@@ -58,9 +47,9 @@
                  (not already-realized?))
         ;; takes a sign and make a space in which next consume can work
         (a/<! consume-chan)
-        (log/debugf "takes a sign of message-id:%s" (:message-id message)))
-      (a/<! (sqs/delete-message client {:queue-url queue-url
-                                        :receipt-handle (:receipt-handle message)})))))
+        (log/debugf "takes a sign of message-id:%s" (p/get-message-id client message)))
+      (a/<! (p/delete-message client {:queue-url queue-url
+                                      :receipt-handle (p/get-recipient-handle client message)})))))
 
 (defn- raise*
   [{:keys [client queue-url consume-chan]} p message & [retry-delay]]
@@ -71,11 +60,11 @@
                  (not already-realized?))
         ;; takes a sign and make a space in which next consume can work
         (a/<! consume-chan)
-        (log/debugf "takes a sign of message-id:%s" (:message-id message)))
+        (log/debugf "takes a sign of message-id:%s" (p/get-message-id client message)))
       (let [retry-delay (or retry-delay 0)]
-        (a/<! (sqs/change-message-visibility client {:queue-url queue-url
-                                                     :receipt-handle (:receipt-handle message)
-                                                     :visibility-timeout retry-delay}))))))
+        (a/<! (p/change-message-visibility client {:queue-url queue-url
+                                                   :receipt-handle (p/get-recipient-handle client message)
+                                                   :visibility-timeout retry-delay}))))))
 
 (defn- heartbeat*
   "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
@@ -88,10 +77,10 @@
         (loop []
           (when (and (not (realized? p))
                      (< (long (/ (- (System/currentTimeMillis) start) 1000)) heartbeat-timeout))
-            (log/debugf "message-id:%s heartbeat" (:message-id message))
-            (sqs/change-message-visibility client {:queue-url queue-url
-                                                   :receipt-handle (:receipt-handle message)
-                                                   :visibility-timeout visibility-timeout-in-heartbeat})
+            (log/debugf "message-id:%s heartbeat" (p/get-message-id client message))
+            (p/change-message-visibility client {:queue-url queue-url
+                                                 :receipt-handle (p/get-recipient-handle client message)
+                                                 :visibility-timeout visibility-timeout-in-heartbeat})
             (a/<! (a/timeout heartbeat-msecs))
             (recur)))))))
 
@@ -121,7 +110,6 @@
   [queue-url
    consume
    client
-   given-client?
    num-workers
    num-receivers
    message-channel-size
@@ -149,8 +137,8 @@
       (a/close! message-chan))
     (when consume-chan
       (a/close! consume-chan))
-    (when (and client (not given-client?))
-      (aws/stop client)))
+    (when client
+      (p/stop client)))
   (-enable-receivers [this]
     (update this :receiver-enabled (fn [atm]
                                      (reset! atm true)
@@ -164,7 +152,6 @@
   [{:as m :keys [queue-url
                  consume
                  client
-                 given-client?
                  num-workers
                  num-receivers
                  message-channel-size
@@ -177,8 +164,7 @@
                  visibility-timeout-in-heartbeat]}]
   {:pre [(not (str/blank? queue-url))
          (ifn? consume)
-         (instance? Client client)
-         (boolean? given-client?)
+         (instance? ISqsClient client)
          (pos? num-workers)
          (pos? num-receivers)
          (pos? message-channel-size)
