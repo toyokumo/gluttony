@@ -12,7 +12,6 @@
           (new-consumer {:queue-url ""
                          :consume (fn [m r r'])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -25,7 +24,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume "foo"
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -38,7 +36,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client {}
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -46,25 +43,11 @@
                          :consume-limit 0
                          :long-polling-duration 10
                          :exceptional-poll-delay-ms 1000}))
-        "client must be a instance of cognitect.aws.client.Clinet")
+        "client must be a instance of ISqsClient")
     (is (thrown? AssertionError
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? nil
-                         :num-workers 1
-                         :num-receivers 1
-                         :message-channel-size 10
-                         :receive-limit 10
-                         :consume-limit 0
-                         :long-polling-duration 10
-                         :exceptional-poll-delay-ms 1000}))
-        "given-client? must be a boolean value")
-    (is (thrown? AssertionError
-          (new-consumer {:queue-url "https://ap..."
-                         :consume (fn [_ _ _])
-                         :client client
-                         :given-client? true
                          :num-workers 0
                          :num-receivers 1
                          :message-channel-size 10
@@ -77,7 +60,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 0
                          :message-channel-size 10
@@ -90,7 +72,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 0
@@ -103,7 +84,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -116,7 +96,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -129,7 +108,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -142,7 +120,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -155,7 +132,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -170,7 +146,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -186,7 +161,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10
@@ -201,7 +175,6 @@
           (new-consumer {:queue-url "https://ap..."
                          :consume (fn [_ _ _])
                          :client client
-                         :given-client? true
                          :num-workers 1
                          :num-receivers 1
                          :message-channel-size 10

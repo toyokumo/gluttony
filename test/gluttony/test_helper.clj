@@ -4,6 +4,7 @@
    [clojure.core.async :as a]
    [clojure.java.io :as io]
    [cognitect.aws.client.api :as aws]
+   [gluttony.record.cognitect-sqs-client :as cognitect-client]
    [unilog.config :as unilog]))
 
 (def config nil)
@@ -16,15 +17,20 @@
                                       (aero/read-config {:profile :dev}))))
   (f))
 
-(defn test-client-fixture [f]
+(defn- create-cognitect-client
+  []
   (let [{:keys [region endpoint]} config]
+    (cond-> {:api :sqs}
+      region (assoc :region region)
+      endpoint (assoc :endpoint-override endpoint)
+      true (aws/client))))
+
+(defn test-client-fixture [f]
+  (let [cognitect-client (create-cognitect-client)]
     (alter-var-root #'client
-                    (constantly (cond-> {:api :sqs}
-                                  region (assoc :region region)
-                                  endpoint (assoc :endpoint-override endpoint)
-                                  true (aws/client))))
+                    (constantly (cognitect-client/make-client cognitect-client)))
     (f)
-    (aws/stop client)))
+    (aws/stop cognitect-client)))
 
 (defn start-logging-fixture [f]
   (unilog/start-logging! {:level :debug
