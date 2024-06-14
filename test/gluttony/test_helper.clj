@@ -4,12 +4,22 @@
    [clojure.core.async :as a]
    [clojure.java.io :as io]
    [cognitect.aws.client.api :as aws]
+   [gluttony.record.aws-sqs-client :as aws-client]
    [gluttony.record.cognitect-sqs-client :as cognitect-client]
-   [unilog.config :as unilog]))
+   [unilog.config :as unilog])
+  (:import
+   (java.net
+    URI)
+   (software.amazon.awssdk.regions
+    Region)
+   (software.amazon.awssdk.services.sqs
+    SqsAsyncClient)))
 
 (def config nil)
 
 (def client nil)
+
+(def aws-client nil)
 
 (defn read-config-fixture [f]
   (alter-var-root #'config
@@ -25,10 +35,26 @@
       endpoint (assoc :endpoint-override endpoint)
       true (aws/client))))
 
+(defn- create-aws-client
+  []
+  (let [{:keys [region endpoint]} config]
+    (cond-> (SqsAsyncClient/builder)
+      region (.region (Region/of (name region)))
+      endpoint (.endpointOverride (URI/create (str (name (:protocol endpoint))
+                                                   "://"
+                                                   (:hostname endpoint)
+                                                   ":"
+                                                   (:port endpoint)
+                                                   (:path endpoint))))
+      true (.build))))
+
 (defn test-client-fixture [f]
-  (let [cognitect-client (create-cognitect-client)]
+  (let [cognitect-client (create-cognitect-client)
+        aws-client (create-aws-client)]
     (alter-var-root #'client
                     (constantly (cognitect-client/make-client cognitect-client)))
+    (alter-var-root #'aws-client
+                    (constantly (aws-client/make-client aws-client)))
     (f)
     (aws/stop cognitect-client)))
 
