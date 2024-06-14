@@ -4,7 +4,6 @@
    [clojure.edn :as edn]
    [clojure.test :refer :all]
    [clojure.tools.logging :as log]
-   [cognitect.aws.client.api :as aws]
    [gluttony.core :refer :all]
    [gluttony.test-helper :as th])
   (:import
@@ -69,20 +68,18 @@
 
 (deftest verify-work-of-receiver-and-worker
   (when (:queue-name th/config)
-    (let [req {:QueueName (:queue-name th/config)}
-          queue-url (:QueueUrl (aws/invoke (:client th/client) {:op :GetQueueUrl :request req}))]
+    (let [queue-url (th/get-queue-url)]
       ;; Make queue empty
-      (aws/invoke (:client th/client) {:op :PurgeQueue :request {:QueueUrl queue-url}})
+      (th/purge-queue queue-url)
 
       (testing "Gather every data in order"
         ;; Add test data
         (let [uuid (UUID/randomUUID)]
           (dotimes [i 20]
-            (aws/invoke (:client th/client) {:op :SendMessage
-                                             :request {:QueueUrl queue-url
-                                                       :MessageBody (pr-str {:id (inc i)})
-                                                       :MessageDeduplicationId (str uuid ":" i)
-                                                       :MessageGroupId (str uuid)}})))
+            (th/send-message {:QueueUrl queue-url
+                              :MessageBody (pr-str {:id (inc i)})
+                              :MessageDeduplicationId (str uuid ":" i)
+                              :MessageGroupId (str uuid)})))
 
         (let [collected (atom [])
               consume (fn [message respond _]
@@ -103,11 +100,10 @@
         ;; Add test data
         (let [uuid (UUID/randomUUID)]
           (dotimes [i 20]
-            (aws/invoke (:client th/client) {:op :SendMessage
-                                             :request {:QueueUrl queue-url
-                                                       :MessageBody (pr-str {:id (inc i)})
-                                                       :MessageDeduplicationId (str uuid ":" i)
-                                                       :MessageGroupId (str uuid)}})))
+            (th/send-message {:QueueUrl queue-url
+                              :MessageBody (pr-str {:id (inc i)})
+                              :MessageDeduplicationId (str uuid ":" i)
+                              :MessageGroupId (str uuid)})))
 
         (let [collected (atom [])
               consume (fn [message respond _]
@@ -128,11 +124,10 @@
         ;; Add test data
         (let [uuid (UUID/randomUUID)]
           (dotimes [i 1]
-            (aws/invoke (:client th/client) {:op :SendMessage
-                                             :request {:QueueUrl queue-url
-                                                       :MessageBody (pr-str {:id (inc i)})
-                                                       :MessageDeduplicationId (str uuid ":" i)
-                                                       :MessageGroupId (str uuid)}})))
+            (th/send-message {:QueueUrl queue-url
+                              :MessageBody (pr-str {:id (inc i)})
+                              :MessageDeduplicationId (str uuid ":" i)
+                              :MessageGroupId (str uuid)})))
 
         (let [collected (atom [])
               consume (fn [message respond _]
@@ -158,11 +153,10 @@
         ;; Add test data
         (let [uuid (UUID/randomUUID)]
           (dotimes [i 3]
-            (aws/invoke (:client th/client) {:op :SendMessage
-                                             :request {:QueueUrl queue-url
-                                                       :MessageBody (pr-str {:id (inc i)})
-                                                       :MessageDeduplicationId (str uuid ":" i)
-                                                       :MessageGroupId (str uuid)}})))
+            (th/send-message {:QueueUrl queue-url
+                              :MessageBody (pr-str {:id (inc i)})
+                              :MessageDeduplicationId (str uuid ":" i)
+                              :MessageGroupId (str uuid)})))
 
         (let [collected (atom [])
               consume (fn [message respond _]
@@ -197,11 +191,10 @@
 
 (deftest disable-and-enable-receivers-test
   (when (:queue-name th/config)
-    (let [req {:QueueName (:queue-name th/config)}
-          queue-url (:QueueUrl (aws/invoke (:client th/client) {:op :GetQueueUrl :request req}))]
+    (let [queue-url (th/get-queue-url)]
       (log/debug queue-url)
       ;; Make queue empty
-      (aws/invoke (:client th/client) {:op :PurgeQueue :request {:QueueUrl queue-url}})
+      (th/purge-queue queue-url)
       ;; wait for finishing long-polling in other tests
       (a/<!! (a/timeout 10000))
       (let [message-count (atom 0)
@@ -215,11 +208,10 @@
                                       :long-polling-duration 1})
             send-message (fn []
                            (let [uuid (UUID/randomUUID)]
-                             (aws/invoke (:client th/client) {:op :SendMessage
-                                                              :request {:QueueUrl queue-url
-                                                                        :MessageBody (pr-str {:id uuid})
-                                                                        :MessageDeduplicationId (str uuid)
-                                                                        :MessageGroupId (str uuid)}})
+                             (th/send-message {:QueueUrl queue-url
+                                               :MessageBody (pr-str {:id uuid})
+                                               :MessageDeduplicationId (str uuid)
+                                               :MessageGroupId (str uuid)})
                              (a/<!! (a/timeout 2000))))]
         (send-message)
         (a/<!! (th/wait-chan (* 1000) (fn [] (>= @message-count 1))))

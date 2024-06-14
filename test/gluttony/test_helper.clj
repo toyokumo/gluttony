@@ -45,3 +45,12 @@
                  (not (done?)))
         (a/<! (a/timeout 100))
         (recur)))))
+
+(defn get-queue-url []
+  (:QueueUrl (aws/invoke (:client client) {:op :GetQueueUrl :request {:QueueName (:queue-name config)}})))
+
+(defn purge-queue [queue-url]
+  (aws/invoke (:client client) {:op :PurgeQueue :request {:QueueUrl queue-url}}))
+
+(defn send-message [request]
+  (aws/invoke (:client client) {:op :SendMessage :request request}))
