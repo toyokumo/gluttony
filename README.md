@@ -1,12 +1,20 @@
 # Gluttony
 A consumer library using [core.async](https://github.com/clojure/core.async)
-and [aws-api](https://github.com/cognitect-labs/aws-api) based on AWS SQS.
+based on AWS SQS.
 
 You can use this library with Standard queue but it is almost designed for FIFO queue.
 
 [![Build and Test](https://github.com/toyokumo/gluttony/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/toyokumo/gluttony/actions/workflows/build-and-test.yml)
 [![cljdoc badge](https://cljdoc.org/badge/toyokumo/gluttony)](https://cljdoc.org/d/toyokumo/gluttony/CURRENT)
 [![Clojars Project](https://img.shields.io/clojars/v/toyokumo/gluttony.svg)](https://clojars.org/toyokumo/gluttony)
+
+## Installation
+To install, add the following to your project `:dependencies`:
+
+[![Clojars Project](https://clojars.org/toyokumo/gluttony/latest-version.svg)](https://clojars.org/toyokumo/gluttony)
+
+and add [AWS SDK for Java 2.0](https://github.com/aws/aws-sdk-java-v2) to your dependencies.
+(If you want to use [aws-api](https://github.com/cognitect-labs/aws-api) instead of AWS SDK, add the dependency on it.)
 
 ## Usage
 ### Basis
@@ -27,7 +35,8 @@ To prevent that, call `stop-receivers` before calling `stop-consumer` and wait f
 
 ```clojure
 (require '[clojure.core.async :as a]
-         '[gluttony.core :as gluttony])
+         '[gluttony.core :as gluttony]
+         '[gluttony.record.aws-sqs-client :as g.client])
 
 (defn consume
   "Your consume function takes three arguments.
@@ -37,7 +46,7 @@ To prevent that, call `stop-receivers` before calling `stop-consumer` and wait f
   raise doesn't delete the message but change the limit of time that the message can be seen
   from other receivers. raise takes zero or one argument, which control the limit of time.
   default limit is zero, which means that retry will be executed as soon as possible."
-  [^gluttony.record.message.SQSMessage message respond raise]
+  [message respond raise]
   (let [success? (do-my-computation-use-cpu message)]
     (if success?
       (do (respond)
@@ -50,7 +59,7 @@ To prevent that, call `stop-receivers` before calling `stop-consumer` and wait f
 (defonce consumer (atom nil))
 
 ;; Start consumer connects to assigned queue
-(reset! consumer (gluttony/start-consumer queue-url consume))
+(reset! consumer (gluttony/start-consumer queue-url consume (g.client/make-client)))
 
 ;; Stop receiver and worker
 (when @consumer
