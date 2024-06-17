@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 ### Breaking Changes
-* Add required "client" arguments to start-consumer
+* Make the `client` argument mandatory.
 
 #### Migration
 Rewrite start-consumer like below.
