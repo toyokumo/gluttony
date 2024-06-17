@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+
+## 0.6.130
 ### Breaking Changes
 * Make the `client` argument mandatory.
 
