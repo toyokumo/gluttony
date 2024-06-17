@@ -55,6 +55,7 @@ jobs:
 
       - name: Test
         env:
+          AWS_REGION: ap-northeast-1
           AWS_ACCESS_KEY_ID: dummy
           AWS_SECRET_ACCESS_KEY: dummy
         run: make test

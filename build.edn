@@ -1,7 +1,9 @@
 {:lib toyokumo/gluttony
- :version "0.5.{{git/commit-count}}"
+ :version "0.6.{{git/commit-count}}"
  :documents [{:file "CHANGELOG.md"
               :match "Unreleased"
               :action :append-after
               :text "\n## {{version}}"}]
- :github-actions? true}
+ :github-actions? true
+ :licenses [{:name "The Apache Software License, Version 2.0"
+             :url "http://www.apache.org/licenses/LICENSE-2.0.txt"}]}

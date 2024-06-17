@@ -1,6 +1,33 @@
 # Change Log
 
 ## [Unreleased]
+### Breaking Changes
+* Make the `client` argument mandatory.
+
+#### Migration
+Rewrite start-consumer like below.
+```clojure
+;; before (using default client)
+(gluttony/start-consumer queue-url consume {:num-workers 1})
+
+;; before (using custom client)
+(gluttony/start-consumer queue-url consume {:client client :num-workers 1})
+
+;; after (using default client)
+(require '[gluttony.record.cognitect-sqs-client :as g.client])
+(gluttony/start-consumer queue-url consume (g.client/make-client) {:num-workers 1})
+
+;; after (using custom client)
+(require '[gluttony.record.cognitect-sqs-client :as g.client])
+(gluttony/start-consumer queue-url consume (g.client/make-client client) {:num-workers 1})
+```
+And add api packages `com.cognitect.aws/api`, `com.cognitect.aws/endpoints` and `com.cognitect.aws/sqs` to dependencies.
+
+### Added
+* AWS API clients other than [aws-api](https://github.com/cognitect-labs/aws-api) (`com.cognitect.aws/api`) are now available.
+** [aws-api](https://github.com/cognitect-labs/aws-api) is still available as `gluttony.record.cognitect-sqs-client`.
+** [AWS SDK for Java 2.0](https://github.com/aws/aws-sdk-java-v2) is available as `gluttony.record.aws-sdk-client`.
+** If you want to use other clients, you can implement `gluttony.protocols/ISqsClient`.
 
 ## 0.5.106
 ### Changed
