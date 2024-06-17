@@ -99,7 +99,7 @@ You may have to fix `dev-resources/test-config.edn`.
 
 ## License
 
-Copyright 2019 TOYOKUMO,Inc.
+Copyright 2024 TOYOKUMO,Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
