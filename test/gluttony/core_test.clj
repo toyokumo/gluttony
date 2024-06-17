@@ -9,8 +9,6 @@
   (:import
    (gluttony.record.consumer
     Consumer)
-   (java.util
-    UUID)
    (software.amazon.awssdk.services.sqs.model
     Message)))
 
@@ -77,7 +75,7 @@
 
         (testing "Gather every data in order"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 20]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -101,7 +99,7 @@
 
         (testing "Concurrent gathering"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 20]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -125,7 +123,7 @@
 
         (testing "Heartbeat work"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 1]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -154,7 +152,7 @@
 
         (testing "Check consume-limit"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 3]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -198,7 +196,7 @@
 
         (testing "Gather every data in order"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 20]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -222,7 +220,7 @@
 
         (testing "Concurrent gathering"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 20]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -246,7 +244,7 @@
 
         (testing "Heartbeat work"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 1]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -275,7 +273,7 @@
 
         (testing "Check consume-limit"
           ;; Add test data
-          (let [uuid (UUID/randomUUID)]
+          (let [uuid (random-uuid)]
             (dotimes [i 3]
               (th/send-message {:QueueUrl queue-url
                                 :MessageBody (pr-str {:id (inc i)})
@@ -330,7 +328,7 @@
                                       :num-receivers 1
                                       :long-polling-duration 1})
             send-message (fn []
-                           (let [uuid (UUID/randomUUID)]
+                           (let [uuid (random-uuid)]
                              (th/send-message {:QueueUrl queue-url
                                                :MessageBody (pr-str {:id uuid})
                                                :MessageDeduplicationId (str uuid)
