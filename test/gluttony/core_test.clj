@@ -165,7 +165,6 @@
                 consume (fn [message respond _]
                           (log/infof "start to consume:%s" (:body message))
                           (a/go
-                            ;(is (instance? gluttony.record.message.SQSMessage message))
                             (swap! collected
                                    conj (:id (edn/read-string (:body message))))
                             (a/<! (a/timeout 10))           ; Make a point of park
@@ -287,7 +286,6 @@
                 consume (fn [^Message message respond _]
                           (log/infof "start to consume:%s" (.body message))
                           (a/go
-                            ;(is (instance? gluttony.record.message.SQSMessage message))
                             (swap! collected
                                    conj (:id (edn/read-string (.body message))))
                             (a/<! (a/timeout 10))           ; Make a point of park
