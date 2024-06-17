@@ -1,6 +1,6 @@
 (ns gluttony.record.aws-sqs-client
   (:require
-   [clojure.core.async :as as]
+   [clojure.core.async :as a]
    [gluttony.protocols :as p])
   (:import
    (java.util.function
@@ -21,7 +21,7 @@
   (receive-message [_ {:keys [queue-url
                               max-number-of-messages
                               wait-time-seconds]}]
-    (let [chan (as/chan 1)
+    (let [chan (a/chan 1)
           request (-> (ReceiveMessageRequest/builder)
                       (.queueUrl queue-url)
                       (.messageAttributeNames ["All"])
@@ -32,14 +32,14 @@
       (-> (.receiveMessage client request)
           (.whenComplete (reify BiConsumer
                            (accept [_ message-resp error]
-                             (as/>!! chan (if message-resp
-                                            {:messages (vec (.messages ^ReceiveMessageResponse message-resp))
-                                             :error nil}
-                                            {:message nil :error error}))
-                             (as/close! chan)))))
+                             (a/>!! chan (if message-resp
+                                           {:messages (vec (.messages ^ReceiveMessageResponse message-resp))
+                                            :error nil}
+                                           {:message nil :error error}))
+                             (a/close! chan)))))
       chan))
   (delete-message [_ {:keys [queue-url receipt-handle]}]
-    (let [chan (as/chan 1)
+    (let [chan (a/chan 1)
           request (-> (DeleteMessageRequest/builder)
                       (.queueUrl queue-url)
                       (.receiptHandle receipt-handle)
@@ -47,11 +47,11 @@
       (-> (.deleteMessage client request)
           (.whenComplete (reify BiConsumer
                            (accept [_ _ error]
-                             (as/>!! chan {:error error})
-                             (as/close! chan)))))
+                             (a/>!! chan {:error error})
+                             (a/close! chan)))))
       chan))
   (change-message-visibility [_ {:keys [queue-url receipt-handle visibility-timeout]}]
-    (let [chan (as/chan 1)
+    (let [chan (a/chan 1)
           request (-> (ChangeMessageVisibilityRequest/builder)
                       (.queueUrl queue-url)
                       (.receiptHandle receipt-handle)
@@ -60,8 +60,8 @@
       (-> (.changeMessageVisibility client request)
           (.whenComplete (reify BiConsumer
                            (accept [_ _ error]
-                             (as/>!! chan {:error error})
-                             (as/close! chan)))))
+                             (a/>!! chan {:error error})
+                             (a/close! chan)))))
       chan))
   (get-message-id [_ message]
     (.messageId ^Message message))
