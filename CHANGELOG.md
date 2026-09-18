@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### Changed
+* Bump library versions.
 
 ## 0.6.130
 ### Breaking Changes
