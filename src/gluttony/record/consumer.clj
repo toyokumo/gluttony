@@ -11,7 +11,7 @@
 
 (defn- heartbeat*
   "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
-  [{:keys [client queue-url heartbeat heartbeat-timeout visibility-timeout-in-heartbeat]} p message]
+  [{:keys [client queue-url heartbeat heartbeat-timeout visibility-timeout-in-heartbeat message-chan]} p message]
   (when heartbeat
     (let [heartbeat-msecs (* heartbeat 1000)
           start (System/currentTimeMillis)]
@@ -19,6 +19,8 @@
         (a/<! (a/timeout heartbeat-msecs))
         (loop []
           (when (and (not (realized? p))
+                     ;; the message-chan is closed when the consumer is stopped
+                     (not (a.i.p/closed? message-chan))
                      (< (long (/ (- (System/currentTimeMillis) start) 1000)) heartbeat-timeout))
             (log/debugf "message-id:%s heartbeat" (p/get-message-id client message))
             (p/change-message-visibility client {:queue-url queue-url
