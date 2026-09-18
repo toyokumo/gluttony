@@ -1,23 +1,23 @@
 {:paths ["src"]
- :deps {org.clojure/clojure {:mvn/version "1.11.1"}
-        org.clojure/core.async {:mvn/version "1.6.673"}
-        org.clojure/tools.logging {:mvn/version "1.2.4"}}
+ :deps {org.clojure/clojure {:mvn/version "1.12.6"}
+        org.clojure/core.async {:mvn/version "1.9.865"}
+        org.clojure/tools.logging {:mvn/version "1.3.1"}}
 
  :aliases
  {:dev {:extra-paths ["test" "dev-resources"]
-        :extra-deps {com.cognitect.aws/api {:mvn/version "0.8.652"}
-                     com.cognitect.aws/endpoints {:mvn/version "1.1.12.415"}
-                     com.cognitect.aws/sqs {:mvn/version "822.2.1109.0"}
+        :extra-deps {com.cognitect.aws/api {:mvn/version "0.8.847"}
+                     com.cognitect.aws/endpoints {:mvn/version "871.2.54.18"}
+                     com.cognitect.aws/sqs {:mvn/version "871.2.34.1"}
                      camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-                     software.amazon.awssdk/sqs {:mvn/version "2.25.65"}
+                     software.amazon.awssdk/sqs {:mvn/version "2.55.0"}
                      aero/aero {:mvn/version "1.1.6"}
-                     spootnik/unilog {:mvn/version "0.7.31"}
-                     lambdaisland/kaocha {:mvn/version "1.80.1274"}}}
+                     spootnik/unilog {:mvn/version "0.7.32"}
+                     lambdaisland/kaocha {:mvn/version "1.91.1392"}}}
 
   :test {:main-opts ["-m" "kaocha.runner"]}
 
   :outdated {:deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}
              :main-opts ["-m" "antq.core"]}
 
-  :build {:deps {com.github.liquidz/build.edn {:mvn/version "0.11.257"}}
+  :build {:deps {com.github.liquidz/build.edn {:mvn/version "0.11.266"}}
           :ns-default build-edn.main}}}

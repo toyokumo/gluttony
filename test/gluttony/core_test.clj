@@ -12,7 +12,7 @@
    (software.amazon.awssdk.services.sqs.model
     Message)))
 
-(use-fixtures :each th/read-config-fixture th/test-client-fixture)
+(use-fixtures :each th/test-client-fixture)
 
 (use-fixtures :once th/start-logging-fixture)
 

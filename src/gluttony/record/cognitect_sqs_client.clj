@@ -4,10 +4,8 @@
    [camel-snake-kebab.extras :as cske]
    [clojure.core.async :as a]
    [cognitect.aws.client.api :as aws]
-   [gluttony.protocols :as p])
-  (:import
-   (cognitect.aws.client.impl
-    Client)))
+   [cognitect.aws.client.protocol :as cognitect.protocol]
+   [gluttony.protocols :as p]))
 
 (defn- invoke-async
   [client op-map]
@@ -53,7 +51,7 @@
   ([]
    (make-client nil))
   ([api-client]
-   {:pre [(or (instance? Client api-client)
+   {:pre [(or (satisfies? cognitect.protocol/Client api-client)
               (nil? api-client))]}
    (->CognitectSQSClient (or api-client
                              (aws/client {:api :sqs}))

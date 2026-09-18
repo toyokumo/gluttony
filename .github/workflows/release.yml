@@ -7,14 +7,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '25'
           java-package: jdk
           architecture: x64
 
@@ -28,7 +28,7 @@ jobs:
           clojure --version
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ~/.m2
           key: clj-cache-${{ hashFiles('**/deps.edn') }}
