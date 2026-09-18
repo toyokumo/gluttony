@@ -1,5 +1,4 @@
-{:region #keyword #or [#env AWS_REGION "ap-northeast-2"]
- :queue-name #or [#env FIFO_QUEUE_NAME "local-queue.fifo"]
+{:queue-name #or [#env FIFO_QUEUE_NAME "local-queue.fifo"]
  :endpoint #profile {:dev {:protocol :http
                            :hostname "localhost"
                            :port 9324
