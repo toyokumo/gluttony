@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+
+## 0.6.142
 ### Fixed
 * Fixed the heartbeat not running while a message is waiting to be consumed.
 
