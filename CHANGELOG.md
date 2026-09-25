@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased]
+### Fixed
+* Fixed the heartbeat not running while a message is waiting to be consumed.
+
 ### Changed
 * Bump library versions.
 

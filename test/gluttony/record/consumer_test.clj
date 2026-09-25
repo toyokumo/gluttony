@@ -1,7 +1,9 @@
 (ns gluttony.record.consumer-test
   (:require
+   [clojure.core.async :as a]
    [clojure.test :refer :all]
-   [gluttony.record.consumer :refer [new-consumer]]
+   [gluttony.protocols :as p]
+   [gluttony.record.consumer :as consumer :refer [new-consumer]]
    [gluttony.test-helper :refer [client test-client-fixture]]))
 
 (use-fixtures :once test-client-fixture)
@@ -186,3 +188,34 @@
                          :heartbeat-timeout 300
                          :visibility-timeout-in-heartbeat 59}))
         "heartbeat is bigger than visibility-timeout-in-heartbeat")))
+
+(deftest heartbeat-test
+  (testing "Heartbeat stops when the consumer is stopped"
+    (let [visibility-change-count (atom 0)
+          message-chan (a/chan)
+          client (reify p/ISqsClient
+                   (receive-message [_ _] (a/go {:messages nil :error nil}))
+                   (delete-message [_ _] (a/go {:error nil}))
+                   (change-message-visibility [_ _]
+                     (swap! visibility-change-count inc)
+                     (a/go {:error nil}))
+                   (get-message-id [_ message] (str message))
+                   (get-recipient-handle [_ message] (str message))
+                   (stop [_]))]
+      (#'consumer/heartbeat* {:client client
+                              :queue-url "https://ap..."
+                              :heartbeat 1
+                              :heartbeat-timeout 60
+                              :visibility-timeout-in-heartbeat 2
+                              :message-chan message-chan}
+                             (promise)
+                             "message")
+      (a/<!! (a/timeout 1500))
+      (let [called @visibility-change-count]
+        (is (pos? called)
+            "heartbeat extends the visibility timeout while the message is not handled")
+        ;; `-stop` closes the message-chan
+        (a/close! message-chan)
+        (a/<!! (a/timeout 1500))
+        (is (= called @visibility-change-count)
+            "heartbeat does not call the stopped client")))))

@@ -9,8 +9,29 @@
    (gluttony.protocols
     ISqsClient)))
 
+(defn- heartbeat*
+  "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
+  [{:keys [client queue-url heartbeat heartbeat-timeout visibility-timeout-in-heartbeat message-chan]} p message]
+  (when heartbeat
+    (let [heartbeat-msecs (* heartbeat 1000)
+          start (System/currentTimeMillis)]
+      (a/go
+        (a/<! (a/timeout heartbeat-msecs))
+        (loop []
+          (when (and (not (realized? p))
+                     ;; the message-chan is closed when the consumer is stopped
+                     (not (a.i.p/closed? message-chan))
+                     (< (long (/ (- (System/currentTimeMillis) start) 1000)) heartbeat-timeout))
+            (log/debugf "message-id:%s heartbeat" (p/get-message-id client message))
+            (p/change-message-visibility client {:queue-url queue-url
+                                                 :receipt-handle (p/get-recipient-handle client message)
+                                                 :visibility-timeout visibility-timeout-in-heartbeat})
+            (a/<! (a/timeout heartbeat-msecs))
+            (recur)))))))
+
 (defn- start-receivers
-  [{:keys [client
+  [{:as consumer
+    :keys [client
            queue-url
            num-receivers
            receive-limit
@@ -29,7 +50,10 @@
             (cond
               messages
               (when (seq messages)
-                (a/<! (a/onto-chan! message-chan messages false)))
+                (let [with-promise (map #(hash-map :message % :promise (promise)) messages)]
+                  (doseq [{:keys [message promise]} with-promise]
+                    (heartbeat* consumer promise message))
+                  (a/<! (a/onto-chan! message-chan with-promise false))))
 
               error
               (a/<! (a/timeout exceptional-poll-delay-ms)))
@@ -66,24 +90,6 @@
                                                    :receipt-handle (p/get-recipient-handle client message)
                                                    :visibility-timeout retry-delay}))))))
 
-(defn- heartbeat*
-  "When heartbeat parameter is set, a heartbeat process start after the first heartbeat"
-  [{:keys [client queue-url heartbeat heartbeat-timeout visibility-timeout-in-heartbeat]} p message]
-  (when heartbeat
-    (let [heartbeat-msecs (* heartbeat 1000)
-          start (System/currentTimeMillis)]
-      (a/go
-        (a/<! (a/timeout heartbeat-msecs))
-        (loop []
-          (when (and (not (realized? p))
-                     (< (long (/ (- (System/currentTimeMillis) start) 1000)) heartbeat-timeout))
-            (log/debugf "message-id:%s heartbeat" (p/get-message-id client message))
-            (p/change-message-visibility client {:queue-url queue-url
-                                                 :receipt-handle (p/get-recipient-handle client message)
-                                                 :visibility-timeout visibility-timeout-in-heartbeat})
-            (a/<! (a/timeout heartbeat-msecs))
-            (recur)))))))
-
 (defn- start-workers
   [{:as consumer :keys [consume
                         num-workers
@@ -94,13 +100,11 @@
       (when consume-chan
         ;; puts a sign which show a worker is now processing a message
         (a/>! consume-chan :consuming))
-      (when-let [message (a/<! message-chan)]
+      (when-let [{:keys [message promise]} (a/<! message-chan)]
         (log/debugf "worker %s takes %s" i message)
-        (let [p (promise)
-              respond (partial respond* consumer p message)
-              raise (partial raise* consumer p message)]
+        (let [respond (partial respond* consumer promise message)
+              raise (partial raise* consumer promise message)]
           (try
-            (heartbeat* consumer p message)
             (consume message respond raise)
             (catch Throwable _
               (raise))))
